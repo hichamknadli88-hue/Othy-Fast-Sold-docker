@@ -6,6 +6,7 @@
     <title>إرسال طلب الشحن | OTHY FAST SOLD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/icon2.png" sizes="any">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #020617; }
@@ -111,14 +112,14 @@
                     </div>
                 </div>
 
-                {{-- رقم الواتساب --}}
-                <div class="mb-5" id="group-whatsapp_number">
-                    <label for="whatsapp_number" class="block mb-2 text-sm font-semibold text-slate-300">رقم الواتساب <span class="text-red-500">*</span></label>
-                    <input type="text" inputmode="tel" id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number') }}"
-                           placeholder="0612345678 أو ‎+212612345678"
+                {{-- الاسم الكامل --}}
+                <div class="mb-5" id="group-fullName">
+                    <label for="fullName" class="block mb-2 text-sm font-semibold text-slate-300">الاسم الكامل <span class="text-red-500">*</span></label>
+                    <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
+                           placeholder="الاسم الكامل"
                            class="w-full h-12 p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-blue-500 transition"
                            required>
-                    <p class="hint text-xs mt-1.5 text-slate-500">صيغة مغربية فقط: 06/05/07XXXXXXXX أو ‎+212XXXXXXXXX.</p>
+                    <p class="hint text-xs mt-1.5 text-slate-500">الاسم الكامل إجباري.</p>
                 </div>
 
                 {{-- المنصة --}}
@@ -197,16 +198,14 @@
     const submitSpinner = document.getElementById('submitSpinner');
     const MAX_BYTES = 5 * 1024 * 1024; // 5MB, mirrors the server's max:5120 rule
 
-    const whatsappRegex = /^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$/;
-
     const fieldState = {
         montant: false,
         account_id: false,
         recharge_code: false,
-        whatsapp_number: false,
-        platform: true, // one is pre-selected by default
+        fullName: false,
+        platform: true,
         recharge_image: false,
-        platform_screenshot: true, // optional, valid by default
+        platform_screenshot: true,
     };
 
     function setFieldStatus(groupId, ok, message) {
@@ -256,14 +255,14 @@
         updateSubmitState();
     });
 
-    // --- رقم الواتساب ---
-    const whatsapp = document.getElementById('whatsapp_number');
-    whatsapp.addEventListener('input', () => {
-        const val = whatsapp.value.trim();
-        const ok = whatsappRegex.test(val);
-        fieldState.whatsapp_number = ok;
-        setFieldStatus('group-whatsapp_number', val.length === 0 ? null : ok,
-            ok ? 'الرقم صحيح.' : 'استعمل صيغة 06XXXXXXXX أو +212XXXXXXXXX.');
+    // --- الاسم الكامل ---
+    const fullName = document.getElementById('fullName');
+    fullName.addEventListener('input', () => {
+        const val = fullName.value.trim();
+        const ok = val.length >= 3;
+        fieldState.fullName = ok;
+        setFieldStatus('group-fullName', val.length === 0 ? null : ok,
+            ok ? 'تمام.' : 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.');
         updateSubmitState();
     });
 
