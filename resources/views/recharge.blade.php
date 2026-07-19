@@ -6,7 +6,7 @@
     <title>إرسال طلب الشحن | OTHY FAST SOLD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="/icon2.png" sizes="any">
+    <link rel="icon" href="{{ asset('1784465709672.png') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #020617; }
