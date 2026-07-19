@@ -46,6 +46,92 @@
             pointer-events: none;
             visibility: hidden;
         }
+
+        /* Copy/redirect confirmation modal */
+        #copyModalOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.75);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1.5rem;
+        }
+        #copyModalOverlay.active {
+            display: flex;
+        }
+        .copy-modal-box {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 1.25rem;
+            padding: 2rem 1.75rem;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: copyModalPop .2s ease;
+        }
+        @keyframes copyModalPop {
+            from { transform: scale(.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .copy-modal-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 1rem;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #60a5fa;
+            font-size: 1.25rem;
+        }
+        .copy-modal-code {
+            display: inline-block;
+            margin-top: .5rem;
+            padding: .4rem 1rem;
+            border-radius: .5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+            font-weight: 900;
+            letter-spacing: .05em;
+        }
+        .copy-modal-actions {
+            display: flex;
+            gap: .75rem;
+            margin-top: 1.75rem;
+        }
+        .copy-modal-btn {
+            flex: 1;
+            padding: .7rem 0;
+            border-radius: .6rem;
+            font-weight: 700;
+            font-size: .85rem;
+            transition: all .2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .copy-modal-btn.confirm {
+            background: #2563eb;
+            color: #fff;
+        }
+        .copy-modal-btn.confirm:hover {
+            background: #3b82f6;
+        }
+        .copy-modal-btn.cancel {
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .copy-modal-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+            color: #e2e8f0;
+        }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen overflow-x-hidden">
@@ -173,6 +259,22 @@
         </div>
     </footer>
 
+    <!-- Copy/redirect confirmation modal -->
+    <div id="copyModalOverlay">
+        <div class="copy-modal-box">
+            <div class="copy-modal-icon">
+                <i class="fa-solid fa-copy"></i>
+            </div>
+            <p class="text-slate-300 text-sm">تم نسخ الكود بنجاح</p>
+            <span id="copyModalCode" class="copy-modal-code"></span>
+            <p class="text-slate-500 text-xs mt-3">هل تريد المتابعة إلى صفحة التسجيل؟</p>
+            <div class="copy-modal-actions">
+                <button id="copyModalCancelBtn" class="copy-modal-btn cancel">إلغاء</button>
+                <button id="copyModalConfirmBtn" class="copy-modal-btn confirm">متابعة</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const priceRows = [
             ['10 DH', '6 Sold', '7 Sold'],
@@ -219,6 +321,13 @@
             codesSection.appendChild(card);
         });
 
+        // Copy/redirect logic with custom confirmation modal
+        const copyModalOverlay = document.getElementById('copyModalOverlay');
+        const copyModalCode = document.getElementById('copyModalCode');
+        const copyModalConfirmBtn = document.getElementById('copyModalConfirmBtn');
+        const copyModalCancelBtn = document.getElementById('copyModalCancelBtn');
+        let pendingRedirectUrl = null;
+
         function copyAndRedirect(code, url) {
             navigator.clipboard.writeText(code).catch(() => {
                 const tmp = document.createElement('textarea');
@@ -228,9 +337,28 @@
                 document.execCommand('copy');
                 document.body.removeChild(tmp);
             });
-            alert('تم نسخ الكود: ' + code);
-            window.open(url, '_blank');
+
+            pendingRedirectUrl = url;
+            copyModalCode.textContent = code;
+            copyModalOverlay.classList.add('active');
         }
+
+        function closeCopyModal() {
+            copyModalOverlay.classList.remove('active');
+            pendingRedirectUrl = null;
+        }
+
+        copyModalConfirmBtn.addEventListener('click', () => {
+            if (pendingRedirectUrl) window.open(pendingRedirectUrl, '_blank');
+            closeCopyModal();
+        });
+
+        copyModalCancelBtn.addEventListener('click', closeCopyModal);
+
+        // Close modal on backdrop click
+        copyModalOverlay.addEventListener('click', (e) => {
+            if (e.target === copyModalOverlay) closeCopyModal();
+        });
 
         const navCta = document.getElementById('nav-cta');
         const heroCta = document.getElementById('hero-cta');
