@@ -153,7 +153,7 @@
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
             <a href="/portal" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
-               لتعبئة الحساب
+                لتعبئة الحساب
             </a>
         </div>
     </nav>
@@ -170,14 +170,22 @@
             وجهتك الأولى للمعالجة الرقمية الآمنة. سرعة فائقة في التنفيذ وتجربة مستخدم لا تضاهى.
         </p>
 
-        <div id="hero-cta-group" class="flex items-stretch justify-center gap-4 w-full max-w-md mb-16">
+        <div id="hero-cta-group" class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mb-4">
             <a href="https://api.whatsapp.com/send/?phone=212725415898&text&type=phone_number&app_absent=0" target="_blank"
-               class="cta-btn bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">
+               class="cta-btn bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 w-full sm:w-auto">
                 <i class="fab fa-whatsapp text-lg"></i>
-               للسحب
+                للسحب
             </a>
-            <a href="/portal" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20">
-               لتعبئة الحساب
+            <a href="/portal" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full sm:w-auto">
+                لتعبئة الحساب
+            </a>
+        </div>
+
+        <!-- زر مجموعة تليجرام تحت الزرين مباشرة -->
+        <div class="w-full max-w-md mb-16">
+            <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full">
+                <i class="fab fa-telegram text-lg"></i>
+                انضم الى مجموعتنا
             </a>
         </div>
 
@@ -244,6 +252,7 @@
                 <div class="space-y-3">
                     <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> القناة الرسمية</a>
                     <a href="https://t.me/Othyfastsold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> الدعم الفوري</a>
+                    <a href="https://t.me/othy_fast_prono" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> مجموعة التوقعات</a>
                 </div>
             </div>
             <div>
@@ -284,7 +293,7 @@
         ];
 
         const platforms = {
-            '1XBT':      { code: 'OTHY077', url: 'https://1xbet.com/registration/' },
+            '1XBT':    { code: 'OTHY077', url: 'https://1xbet.com/registration/' },
             'LINEBET':   { code: 'OTHY07',  url: 'https://linebet.com/registration/' },
             'MELBET':    { code: 'OTHY08',  url: 'https://melbet.com/registration/' },
             'PARIPULSE': { code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/' }
