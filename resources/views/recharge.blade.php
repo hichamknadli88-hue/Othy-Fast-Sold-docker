@@ -96,19 +96,19 @@
                     </div>
                 </div>
 
-                {{-- كود التعبئة --}}
+                {{-- كود التعبئة (تم تعديله إلى 16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
                     <label for="recharge_code" class="block mb-2 text-sm font-semibold text-slate-300">
                         كود التعبئة <span class="text-red-500">*</span>
-                        <span class="text-slate-500 font-normal">(14 رقم بالضبط)</span>
+                        <span class="text-slate-500 font-normal">(16 رقم بالضبط)</span>
                     </label>
                     <input type="text" inputmode="numeric" id="recharge_code" name="recharge_code" value="{{ old('recharge_code') }}"
-                           maxlength="14" placeholder="14 رقم"
+                           maxlength="16" placeholder="16 رقم"
                            class="w-full h-12 p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-blue-500 transition tracking-widest"
                            required>
                     <div class="flex justify-between mt-1.5">
                         <p class="hint text-xs text-slate-500">أرقام فقط، بدون مسافات أو رموز.</p>
-                        <span id="code-counter" class="text-xs text-slate-500 font-mono">0/14</span>
+                        <span id="code-counter" class="text-xs text-slate-500 font-mono">0/16</span>
                     </div>
                 </div>
 
@@ -196,7 +196,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
     const submitSpinner = document.getElementById('submitSpinner');
-    const MAX_BYTES = 5 * 1024 * 1024; // 5MB, mirrors the server's max:5120 rule
+    const MAX_BYTES = 5 * 1024 * 1024; // 5MB
 
     const fieldState = {
         montant: false,
@@ -213,7 +213,7 @@
         if (!group) return;
         group.classList.remove('field-ok', 'field-error');
         const hint = group.querySelector('.hint');
-        if (ok === null) return; // untouched, neutral state
+        if (ok === null) return;
         group.classList.add(ok ? 'field-ok' : 'field-error');
         if (hint && message) hint.textContent = message;
     }
@@ -242,16 +242,16 @@
         updateSubmitState();
     });
 
-    // --- كود التعبئة (14 رقم بالضبط) ---
+    // --- كود التعبئة (16 رقم بالضبط) ---
     const rechargeCode = document.getElementById('recharge_code');
     const codeCounter = document.getElementById('code-counter');
     rechargeCode.addEventListener('input', () => {
-        rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 14);
-        codeCounter.textContent = rechargeCode.value.length + '/14';
-        const ok = rechargeCode.value.length === 14;
+        rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 16);
+        codeCounter.textContent = rechargeCode.value.length + '/16';
+        const ok = rechargeCode.value.length === 16;
         fieldState.recharge_code = ok;
         setFieldStatus('group-recharge_code', rechargeCode.value.length === 0 ? null : ok,
-            ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 14 رقماً بالضبط.');
+            ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 16 رقماً بالضبط.');
         updateSubmitState();
     });
 
@@ -274,7 +274,7 @@
         });
     });
 
-    // --- رفع الصور مع معاينة وتحقق من الحجم/النوع ---
+    // --- رفع الصور ---
     function wireUpload(inputId, required) {
         const input = document.getElementById(inputId);
         const zone = input.previousElementSibling;
@@ -325,7 +325,6 @@
             updateSubmitState();
         });
 
-        // Drag & drop support
         zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('border-blue-500'); });
         zone.addEventListener('dragleave', () => zone.classList.remove('border-blue-500'));
         zone.addEventListener('drop', e => {
@@ -340,7 +339,7 @@
     wireUpload('recharge_image', true);
     wireUpload('platform_screenshot', false);
 
-    // --- منع الإرسال المزدوج + مؤشر تحميل ---
+    // --- منع الإرسال المزدوج ---
     form.addEventListener('submit', (e) => {
         if (submitBtn.disabled) {
             e.preventDefault();
@@ -351,7 +350,7 @@
         submitLabel.textContent = 'جاري الإرسال...';
     });
 
-    // --- عداد إعادة المحاولة بعد تجاوز الحد المسموح ---
+    // --- عداد إعادة المحاولة ---
     const countdownEl = document.getElementById('retry-countdown');
     if (countdownEl) {
         let seconds = parseInt(countdownEl.dataset.seconds, 10) || 0;
