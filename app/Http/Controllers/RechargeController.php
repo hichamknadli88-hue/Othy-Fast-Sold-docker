@@ -43,7 +43,7 @@ class RechargeController extends Controller
             'montant' => ['required', 'numeric', 'gt:1'],
             'account_id' => ['required', 'string', 'max:50'],
 
-            'recharge_code' => ['required', 'digits:14'],
+            'recharge_code' => ['required', 'digits:16'],
 
             'fullName' => [
                 'required',
