@@ -96,7 +96,7 @@
                     </div>
                 </div>
 
-                {{-- كود التعبئة (تم تعديله إلى 16 رقم) --}}
+                {{-- كود التعبئة (16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
                     <label for="recharge_code" class="block mb-2 text-sm font-semibold text-slate-300">
                         كود التعبئة <span class="text-red-500">*</span>
@@ -145,7 +145,7 @@
                     <label class="block mb-2 text-sm font-semibold text-slate-300">صورة إثبات التعبئة <span class="text-red-500">*</span></label>
                     <label for="recharge_image" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-700 rounded-xl p-6 cursor-pointer hover:border-blue-500/60 transition text-center">
                         <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-500"></i>
-                        <span class="text-sm text-slate-400" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (JPG, PNG, WEBP — أقصى حجم 5 ميغا)</span>
+                        <span class="text-sm text-slate-400" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (JPG, PNG, WEBP — أقصى حجم 15 ميغا)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-slate-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="recharge_image" name="recharge_image" accept="image/png,image/jpeg,image/webp" class="hidden" required>
@@ -157,7 +157,7 @@
                     <label class="block mb-2 text-sm font-semibold text-slate-300">سكرين شوت (ID + البرومو كود) <span class="text-slate-500 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-700 rounded-xl p-6 cursor-pointer hover:border-blue-500/60 transition text-center">
                         <i class="fa-solid fa-image text-2xl text-slate-500"></i>
-                        <span class="text-sm text-slate-400" data-default-label>اضغط لاختيار صورة (اختياري — أقصى حجم 5 ميغا)</span>
+                        <span class="text-sm text-slate-400" data-default-label>اضغط لاختيار صورة (اختياري — أقصى حجم 15 ميغا)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-slate-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="platform_screenshot" name="platform_screenshot" accept="image/png,image/jpeg,image/webp" class="hidden">
@@ -196,7 +196,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
     const submitSpinner = document.getElementById('submitSpinner');
-    const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+    const MAX_BYTES = 15 * 1024 * 1024; // تم تعديل الحد الأقصى إلى 15MB
 
     const fieldState = {
         montant: false,
@@ -306,7 +306,7 @@
             if (!isSmallEnough) {
                 fieldState[inputId] = false;
                 const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-                setFieldStatus(groupId, false, `حجم الصورة ${sizeMb} ميغا. الحد الأقصى هو 5 ميغا.`);
+                setFieldStatus(groupId, false, `حجم الصورة ${sizeMb} ميغا. الحد الأقصى هو 15 ميغا.`);
                 preview.classList.add('hidden');
                 updateSubmitState();
                 return;
