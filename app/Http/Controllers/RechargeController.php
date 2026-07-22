@@ -17,7 +17,7 @@ class RechargeController extends Controller
 
     private const DECAY_SECONDS = 300;
 
-    private const MAX_IMAGE_KB = 5120;
+    private const MAX_IMAGE_KB =15360;
 
     public function index()
     {
