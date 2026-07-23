@@ -36,7 +36,7 @@
 
         <div class="glass-card p-6 md:p-8 rounded-3xl shadow-xl">
             <h2 class="text-3xl font-black text-center mb-2 text-white">
-                <span class="text-blue-400">OTHY</span> نموذج طلب الشحن
+                <span class="text-blue-400">OTHY FAST SOLD</span> نموذج طلب الشحن
             </h2>
             <p class="text-gray-400 text-center text-sm mb-8">عبّي المعلومات بدقة، الطلب كيتصيفط مباشرة لفريقنا.</p>
 
