@@ -85,5 +85,13 @@ class RechargeController extends Controller
             Log::error('Recharge Error: ' . $e->getMessage());
             return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
         }
+        } catch (\Exception $e) {
+            Log::error('Recharge Error: ' . $e->getMessage());
+            
+            // قم بتعطيل هذا السطر مؤقتاً لترى الخطأ الحقيقي على الشاشة
+            dd($e->getMessage(), $e->getFile(), $e->getLine());
+            
+            return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
+        }
     }
 }
