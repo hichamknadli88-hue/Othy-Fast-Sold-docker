@@ -25,7 +25,7 @@ COPY deploy/nginx.conf /etc/nginx/sites-available/default
 COPY deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
+RUN php artisan storage:link
 EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
