@@ -21,6 +21,10 @@ class RechargeController extends Controller
 
     public function store(Request $request)
     {
+        // رفع الذاكرة المؤقتة ووقت التنفيذ لمعالجة الصور الكبيرة بسلاسة
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         // نظام الحماية من التكرار المؤقت (Rate Limiting based on IP)
         $ipKey = 'recharge_ip_' . $request->ip();
         if (session()->has($ipKey)) {
