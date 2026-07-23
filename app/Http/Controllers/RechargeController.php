@@ -23,7 +23,7 @@ class RechargeController extends Controller
     public function store(Request $request)
     {
         // رفع الذاكرة المؤقتة ووقت التنفيذ لمعالجة الصور الكبيرة بسلاسة
-        ini_set('memory_limit', '512M');
+        agent: ini_set('memory_limit', '512M');
         set_time_limit(300);
 
         // نظام الحماية من التكرار المؤقت (Rate Limiting based on IP)
@@ -83,14 +83,6 @@ class RechargeController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Recharge Error: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
-        }
-        } catch (\Exception $e) {
-            Log::error('Recharge Error: ' . $e->getMessage());
-            
-            // قم بتعطيل هذا السطر مؤقتاً لترى الخطأ الحقيقي على الشاشة
-            dd($e->getMessage(), $e->getFile(), $e->getLine());
-            
             return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
         }
     }
