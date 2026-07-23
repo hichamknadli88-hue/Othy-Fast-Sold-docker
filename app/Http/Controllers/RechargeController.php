@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class RechargeController extends Controller
 {
+    private const PLATFORMS = ['1xbet', 'melbet', 'paripulse', 'linebet'];
+
     public function index()
     {
-        $platforms = ['1xbet', 'melbet', 'paripulse', 'linebet'];
-        return view('recharge', compact('platforms'));
+        return view('recharge', ['platforms' => self::PLATFORMS]);
     }
 
     public function store(Request $request)
@@ -31,7 +33,6 @@ class RechargeController extends Controller
             }
         }
 
-        // تم توسيع نوع الملفات المسموحة
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
             'account_id' => ['required', 'string', 'max:255'],
@@ -51,48 +52,82 @@ class RechargeController extends Controller
             'recharge_image.image' => 'الملف يجب أن يكون صورة صالحاً.',
         ]);
 
+        $token = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
+
+        if (!$token || !$chatId) {
+            Log::error('Telegram credentials are missing from config/services.php or .env.');
+            return back()->with('error', 'خطأ في إعدادات الخادم. المرجو التواصل مع الدعم.')->withInput();
+        }
+
         try {
-            $imagePath = null;
-            if ($request->hasFile('recharge_image')) {
-                $image = $request->file('recharge_image');
-                $imagePath = $this->compressAndStoreImage($image, 'recharges');
-            }
+            // ضغط الصور في الذاكرة مباشرة (بدون تخزينها في storage)
+            $imageBinary = $this->compressImage($request->file('recharge_image'));
 
-            $screenshotPath = null;
+            $screenshotBinary = null;
             if ($request->hasFile('platform_screenshot')) {
-                $screenshot = $request->file('platform_screenshot');
-                $screenshotPath = $this->compressAndStoreImage($screenshot, 'screenshots');
+                $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
-            session([$ipKey => time() + 60]);
+            $message = "🔔 *طلب شحن جديد*\n\n" .
+                "💰 المبلغ: {$validated['montant']}\n" .
+                "🆔 ID الحساب: {$validated['account_id']}\n" .
+                "🎟 الكود: {$validated['recharge_code']}\n" .
+                "🎮 المنصة: " . strtoupper($validated['platform']);
 
-            return back()->with('success', 'تم إرسال طلب الشحن بنجاح، سيتم مراجعته قريباً.');
+            $media = [
+                [
+                    'type' => 'photo',
+                    'media' => 'attach://recharge_image',
+                    'caption' => $message,
+                    'parse_mode' => 'Markdown',
+                ],
+            ];
 
-        } CATCH (\Exception $e) {
+            $http = Http::asMultipart()->timeout(30)
+                ->attach('recharge_image', $imageBinary, 'recharge.jpg');
+
+            if ($screenshotBinary) {
+                $media[] = ['type' => 'photo', 'media' => 'attach://platform_screenshot'];
+                $http = $http->attach('platform_screenshot', $screenshotBinary, 'screenshot.jpg');
+            }
+
+            $response = $http->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
+                'chat_id' => $chatId,
+                'media' => json_encode($media),
+            ]);
+
+            if ($response->successful()) {
+                session([$ipKey => time() + 60]);
+                return back()->with('success', 'تم إرسال طلبك بنجاح. سيتم التواصل معك قريباً.');
+            }
+
+            Log::error('Telegram API responded with an error.', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return back()
+                ->with('error', 'حدث خطأ أثناء إرسال الطلب. حاول مرة أخرى أو تواصل معنا عبر واتساب.')
+                ->withInput();
+
+        } catch (\Exception $e) {
             Log::error('Recharge Error: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
+            return back()
+                ->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')
+                ->withInput();
         }
     }
 
     /**
-     * دالة لضغط الصور الكبيرة وتصغير حجمها باستخدام PHP الأصلي لتتخطى أي قيود
+     * تضغط الصورة وتعيد المحتوى الثنائي (binary) جاهزاً للإرسال مباشرة لتيليغرام
+     * دون الحاجة لحفظها في storage (لا حاجة لقاعدة بيانات أو تخزين دائم)
      */
-    private function compressAndStoreImage($file, $folder)
+    private function compressImage($file): string
     {
-        $filename = Str::uuid() . '.jpg';
-        $destinationPath = storage_path('app/public/' . $folder);
-
-        if (!file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
-
-        $filePath = $destinationPath . '/' . $filename;
         $tmpPath = $file->getRealPath();
-
-        // قراءة أبعاد الصورة ونوعها
         list($width, $height, $type) = getimagesize($tmpPath);
 
-        // تصغير الأبعاد الكبيرة إذا تجاوزت 1200 بكسل لتخفيف الحجم
         $maxDimension = 1200;
         if ($width > $maxDimension || $height > $maxDimension) {
             if ($width > $height) {
@@ -107,7 +142,6 @@ class RechargeController extends Controller
             $newHeight = $height;
         }
 
-        // إنشاء صورة جديدة بالأبعاد الجديدة
         $dstImage = imagecreatetruecolor($newWidth, $newHeight);
 
         switch ($type) {
@@ -116,7 +150,6 @@ class RechargeController extends Controller
                 break;
             case IMAGETYPE_PNG:
                 $srcImage = imagecreatefrompng($tmpPath);
-                // الحفاظ على الشفافية في الصور الشفافة
                 imagealphablending($dstImage, false);
                 imagesavealpha($dstImage, true);
                 break;
@@ -124,17 +157,18 @@ class RechargeController extends Controller
                 $srcImage = imagecreatefromwebp($tmpPath);
                 break;
             default:
-                return $file->store($folder, 'public');
+                return file_get_contents($tmpPath);
         }
 
         imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
-        // حفظ الصورة بجودة 75% (وهي جودة ممتازة وواضحة جداً وتصغر الحجم بشكل هائل)
-        imagejpeg($dstImage, $filePath, 75);
+        ob_start();
+        imagejpeg($dstImage, null, 75);
+        $binary = ob_get_clean();
 
         imagedestroy($srcImage);
         imagedestroy($dstImage);
 
-        return $folder . '/' . $filename;
+        return $binary;
     }
 }
