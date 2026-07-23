@@ -14,8 +14,8 @@ class RechargeController extends Controller
 
     public function index()
     {
-        // قائمة المنصات المتاحة
-        $platforms = ['1xbet', 'melbet', 'betwinner', 'linebet'];
+        // قائمة المنصات المتاحة محدثة بـ Paripulse
+        $platforms = ['1xbet', 'melbet', 'paripulse', 'linebet'];
         return view('recharge', compact('platforms'));
     }
 
@@ -69,7 +69,7 @@ class RechargeController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Recharge Error: ' . $e->getMessage());
-            return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجيب المحاولة لاحقاً.')->withInput();
+            return back()->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')->withInput();
         }
     }
 }
