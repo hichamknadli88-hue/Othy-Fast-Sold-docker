@@ -17,7 +17,7 @@ class RechargeController extends Controller
 
     private const DECAY_SECONDS = 300;
 
-    private const MAX_IMAGE_KB = 5120;
+    private const MAX_IMAGE_KB = 7168; // 7MB
 
     public function index()
     {
@@ -61,11 +61,11 @@ class RechargeController extends Controller
             'recharge_code.digits' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'platform.in' => 'المنصة المختارة غير صحيحة.',
             'recharge_image.required' => 'صورة إثبات التعبئة إجبارية.',
-            'recharge_image.max' => 'حجم صورة التعبئة يجب أن لا يتجاوز 5 ميغا.',
+            'recharge_image.max' => 'حجم صورة التعبئة يجب أن لا يتجاوز 7 ميغا.',
             'recharge_image.uploaded' => 'فشل رفع صورة التعبئة، حاول مرة أخرى بصورة أصغر حجماً أو تحقق من اتصالك بالإنترنت.',
             'recharge_image.image' => 'صورة إثبات التعبئة غير صالحة.',
             'recharge_image.mimes' => 'صيغة صورة التعبئة يجب أن تكون JPG أو PNG أو WEBP.',
-            'platform_screenshot.max' => 'حجم السكرين شوت يجب أن لا يتجاوز 5 ميغا.',
+            'platform_screenshot.max' => 'حجم السكرين شوت يجب أن لا يتجاوز 7 ميغا.',
             'platform_screenshot.uploaded' => 'فشل رفع السكرين شوت، حاول مرة أخرى بصورة أصغر حجماً.',
             'platform_screenshot.image' => 'السكرين شوت غير صالح.',
             'platform_screenshot.mimes' => 'صيغة السكرين شوت يجب أن تكون JPG أو PNG أو WEBP.',
@@ -106,17 +106,19 @@ class RechargeController extends Controller
                 $http = $http->withOptions(['verify' => false]);
             }
 
+            $imageFile = $request->file('recharge_image');
             $http = $http->attach(
                 'recharge_image',
-                file_get_contents($request->file('recharge_image')->getRealPath()),
+                fopen($imageFile->getPathname(), 'r'),
                 'recharge.jpg'
             );
 
             if ($request->hasFile('platform_screenshot')) {
                 $media[] = ['type' => 'photo', 'media' => 'attach://platform_screenshot'];
+                $screenshotFile = $request->file('platform_screenshot');
                 $http = $http->attach(
                     'platform_screenshot',
-                    file_get_contents($request->file('platform_screenshot')->getRealPath()),
+                    fopen($screenshotFile->getPathname(), 'r'),
                     'screenshot.jpg'
                 );
             }
