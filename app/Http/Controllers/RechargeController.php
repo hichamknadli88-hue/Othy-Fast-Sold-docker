@@ -42,11 +42,8 @@ class RechargeController extends Controller
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'gt:1'],
             'account_id' => ['required', 'string', 'max:50'],
-
             'recharge_code' => ['required', 'digits:16'],
-
             'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
-
             'recharge_image' => [
                 'required',
                 'image',
