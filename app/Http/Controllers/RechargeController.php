@@ -23,7 +23,7 @@ class RechargeController extends Controller
     public function store(Request $request)
     {
         // رفع الذاكرة المؤقتة ووقت التنفيذ لمعالجة الصور الكبيرة بسلاسة
-        agent: ini_set('memory_limit', '512M');
+        ini_set('memory_limit', '512M');
         set_time_limit(300);
 
         // نظام الحماية من التكرار المؤقت (Rate Limiting based on IP)
@@ -38,7 +38,7 @@ class RechargeController extends Controller
             }
         }
 
-        // التحقق من المدخلات مع رفع الحد الأقصى للصورة إلى 25 ميغابايت
+        // التحقق من المدخلات مع رفع الحد الأقص للصورة إلى 25 ميغابايت
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
             'account_id' => ['required', 'string', 'max:255'],
