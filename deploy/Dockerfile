@@ -7,6 +7,12 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install zip gd \
     && rm -rf /var/lib/apt/lists/*
 
+# إضافة إعدادات PHP لرفع الملفات الكبيرة والوقت
+RUN echo "upload_max_filesize = 30M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size = 30M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
@@ -25,7 +31,7 @@ COPY deploy/nginx.conf /etc/nginx/sites-available/default
 COPY deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-RUN php artisan storage:link
+
 EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
