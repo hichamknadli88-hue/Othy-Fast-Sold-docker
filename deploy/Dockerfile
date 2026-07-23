@@ -2,7 +2,9 @@ FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
     nginx supervisor git unzip zip curl libzip-dev gettext-base \
-    && docker-php-ext-install zip \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install zip gd \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
