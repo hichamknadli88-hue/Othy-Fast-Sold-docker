@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إرسال طلب الشحن | OTHY FAST SOLD</title>
-    <!-- استبدال Tailwind CDN بـ CSS رسمي مباشر لتجنب مشاكل عدم ظهور الستايل -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="{{ asset('1784465709672.png') }}">
@@ -97,7 +96,7 @@
                     </div>
                 </div>
 
-                {{-- كود التعبئة (تم تعديله إلى 16 رقم) --}}
+                {{-- كود التعبئة (16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
                     <label for="recharge_code" class="block mb-2 text-sm font-semibold text-gray-300">
                         كود التعبئة <span class="text-red-500">*</span>
@@ -111,16 +110,6 @@
                         <p class="hint text-xs text-gray-400">أرقام فقط، بدون مسافات أو رموز.</p>
                         <span id="code-counter" class="text-xs text-gray-400 font-mono">0/16</span>
                     </div>
-                </div>
-
-                {{-- الاسم الكامل --}}
-                <div class="mb-5" id="group-fullName">
-                    <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
-                    <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
-                           placeholder="الاسم الكامل"
-                           class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
-                           required>
-                    <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري.</p>
                 </div>
 
                 {{-- المنصة --}}
@@ -203,7 +192,6 @@
         montant: false,
         account_id: false,
         recharge_code: false,
-        fullName: false,
         platform: true,
         recharge_image: false,
         platform_screenshot: true,
@@ -249,23 +237,12 @@
     const rechargeCode = document.getElementById('recharge_code');
     const codeCounter = document.getElementById('code-counter');
     rechargeCode.addEventListener('input', () => {
-        // تعديل الحد الأقصى إلى 16 رقم
         rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 16);
         codeCounter.textContent = rechargeCode.value.length + '/16';
         const ok = rechargeCode.value.length === 16;
         fieldState.recharge_code = ok;
         setFieldStatus('group-recharge_code', rechargeCode.value.length === 0 ? null : ok,
             ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 16 رقماً بالضبط.');
-        updateSubmitState();
-    });
-
-    const fullName = document.getElementById('fullName');
-    fullName.addEventListener('input', () => {
-        const val = fullName.value.trim();
-        const ok = val.length >= 3;
-        fieldState.fullName = ok;
-        setFieldStatus('group-fullName', val.length === 0 ? null : ok,
-            ok ? 'تمام.' : 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.');
         updateSubmitState();
     });
 
