@@ -45,12 +45,6 @@ class RechargeController extends Controller
 
             'recharge_code' => ['required', 'digits:16'],
 
-            'whatsapp_number' => [
-                'required',
-                'string',
-                'regex:/^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$/',
-            ],
-
             'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
 
             'recharge_image' => [
@@ -67,8 +61,7 @@ class RechargeController extends Controller
             ],
         ], [
             'montant.gt' => 'يجب أن يكون المبلغ أكبر من 1 درهم.',
-            'recharge_code.digits' => 'يجب أن يتكون كود التعبئة من 14 رقماً بالضبط.',
-            'whatsapp_number.regex' => 'رقم الواتساب غير صحيح. استعمل صيغة 06XXXXXXXX أو +212XXXXXXXXX.',
+            'recharge_code.digits' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'platform.in' => 'المنصة المختارة غير صحيحة.',
             'recharge_image.required' => 'صورة إثبات التعبئة إجبارية.',
             'recharge_image.max' => 'حجم صورة التعبئة يجب أن لا يتجاوز 5 ميغا.',
@@ -98,7 +91,6 @@ class RechargeController extends Controller
             "💰 المبلغ: {$validated['montant']}\n" .
             "🆔 ID الحساب: {$validated['account_id']}\n" .
             "🎟 الكود: {$validated['recharge_code']}\n" .
-            "📞 الواتساب: {$validated['whatsapp_number']}\n" .
             "🎮 المنصة: " . strtoupper($validated['platform']);
 
         $media = [
