@@ -135,7 +135,7 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-300">صورة إثبات التعبئة <span class="text-red-500">*</span></label>
                     <label for="recharge_image" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
                         <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400"></i>
-                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (JPG, PNG, WEBP — أقصى حجم 5124 كيلوبايت)</span>
+                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (JPG, PNG, WEBP — أقصى حجم 7 ميجابايت)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-gray-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="recharge_image" name="recharge_image" accept="image/png,image/jpeg,image/webp" class="hidden" required>
@@ -147,7 +147,7 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-300">سكرين شوت (ID + البرومو كود) <span class="text-gray-400 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
                         <i class="fa-solid fa-image text-2xl text-gray-400"></i>
-                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة (اختياري — أقصى حجم 5124 كيلوبايت)</span>
+                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة (اختياري — أقصى حجم 7 ميجابايت)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-gray-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="platform_screenshot" name="platform_screenshot" accept="image/png,image/jpeg,image/webp" class="hidden">
@@ -186,7 +186,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
     const submitSpinner = document.getElementById('submitSpinner');
-    const MAX_BYTES = 5124 * 1024;
+    const MAX_BYTES = 7168 * 1024; // 7MB بالبايت
 
     const fieldState = {
         montant: false,
@@ -286,7 +286,7 @@
             if (!isSmallEnough) {
                 fieldState[inputId] = false;
                 const sizeKb = (file.size / 1024).toFixed(0);
-                setFieldStatus(groupId, false, `حجم الصورة ${sizeKb} كيلوبايت. الحد الأقصى هو 5124 كيلوبايت.`);
+                setFieldStatus(groupId, false, `حجم الصورة ${sizeKb} كيلوبايت. الحد الأقصى هو 7 ميجابايت.`);
                 preview.classList.add('hidden');
                 label.classList.remove('hidden');
                 updateSubmitState();
