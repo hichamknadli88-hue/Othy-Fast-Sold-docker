@@ -7,11 +7,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install zip gd \
     && rm -rf /var/lib/apt/lists/*
 
-# إضافة إعدادات PHP لرفع الملفات الكبيرة والوقت
-RUN echo "upload_max_filesize = 30M" > /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size = 30M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini
+# إعدادات PHP لرفع حد الملفات والذاكرة (هذا كان الجزء الناقص)
+RUN echo "upload_max_filesize=25M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size=25M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit=512M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "max_execution_time=300" >> /usr/local/etc/php/conf.d/uploads.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
