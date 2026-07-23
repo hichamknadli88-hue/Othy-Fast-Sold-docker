@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class RechargeController extends Controller
@@ -63,10 +64,19 @@ class RechargeController extends Controller
         ]);
 
         try {
-            // معالجة رفع الصور وإرسالها لبوت تيليغرام أو تخزينها
-            // (يمكنك وضع الكود الخاص بك هنا لمعالجة الملفات وحفظها وإرسالها للتيليغرام)
+            // تخزين صورة إثبات التعبئة بشكل آمن في التخزين العام
+            $imagePath = null;
+            if ($request->hasFile('recharge_image')) {
+                $imagePath = $request->file('recharge_image')->store('recharges', 'public');
+            }
 
-            // وضع فترة حماية للمستخدم (مثلاً 60 ثانية قبل الإرسال مرة أخرى)
+            // تخزين السكرين شوت إن وُجد
+            $screenshotPath = null;
+            if ($request->hasFile('platform_screenshot')) {
+                $screenshotPath = $request->file('platform_screenshot')->store('screenshots', 'public');
+            }
+
+            // وضع فترة حماية للمستخدم (60 ثانية قبل الإرسال مرة أخرى)
             session([$ipKey => time() + 60]);
 
             return back()->with('success', 'تم إرسال طلب الشحن بنجاح، سيتم مراجعته قريباً.');
