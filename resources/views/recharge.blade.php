@@ -96,6 +96,16 @@
                     </div>
                 </div>
 
+                {{-- الاسم الكامل --}}
+                <div class="mb-5" id="group-fullName">
+                    <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
+                    <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
+                           placeholder="الاسم الكامل"
+                           class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
+                           required>
+                    <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري.</p>
+                </div>
+
                 {{-- كود التعبئة (16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
                     <label for="recharge_code" class="block mb-2 text-sm font-semibold text-gray-300">
@@ -135,7 +145,7 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-300">صورة إثبات التعبئة <span class="text-red-500">*</span></label>
                     <label for="recharge_image" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
                         <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400"></i>
-                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (JPG, PNG, WEBP — أقصى حجم 25 ميجابايت)</span>
+                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة أو اسحبها هنا (أي حجم — سيتم ضغطها تلقائياً)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-gray-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="recharge_image" name="recharge_image" accept="image/png,image/jpeg,image/webp" class="hidden" required>
@@ -147,7 +157,7 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-300">سكرين شوت (ID + البرومو كود) <span class="text-gray-400 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
                         <i class="fa-solid fa-image text-2xl text-gray-400"></i>
-                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة (اختياري — أقصى حجم 25 ميجابايت)</span>
+                        <span class="text-sm text-gray-300" data-default-label>اضغط لاختيار صورة (اختياري — سيتم ضغطها تلقائياً)</span>
                         <img class="preview hidden mt-2 max-h-40 rounded-lg border border-gray-700" alt="معاينة الصورة">
                     </label>
                     <input type="file" id="platform_screenshot" name="platform_screenshot" accept="image/png,image/jpeg,image/webp" class="hidden">
@@ -186,11 +196,14 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
     const submitSpinner = document.getElementById('submitSpinner');
-    const MAX_BYTES = 25 * 1024 * 1024; // 25MB بالبايت
+
+    const MAX_DIMENSION = 1600;
+    const JPEG_QUALITY = 0.75;
 
     const fieldState = {
         montant: false,
         account_id: false,
+        fullName: false,
         recharge_code: false,
         platform: true,
         recharge_image: false,
@@ -234,6 +247,16 @@
         updateSubmitState();
     });
 
+    const fullName = document.getElementById('fullName');
+    fullName.addEventListener('input', () => {
+        const val = fullName.value.trim();
+        const ok = val.length >= 3;
+        fieldState.fullName = ok;
+        setFieldStatus('group-fullName', val.length === 0 ? null : ok,
+            ok ? 'تمام.' : 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.');
+        updateSubmitState();
+    });
+
     const rechargeCode = document.getElementById('recharge_code');
     const codeCounter = document.getElementById('code-counter');
     rechargeCode.addEventListener('input', () => {
@@ -253,6 +276,52 @@
         });
     });
 
+    function compressImageFile(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                img.onload = () => {
+                    let { width, height } = img;
+
+                    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                        if (width > height) {
+                            height = Math.round(height * (MAX_DIMENSION / width));
+                            width = MAX_DIMENSION;
+                        } else {
+                            width = Math.round(width * (MAX_DIMENSION / height));
+                            height = MAX_DIMENSION;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject(new Error('فشل ضغط الصورة'));
+                            return;
+                        }
+                        const compressedFile = new File(
+                            [blob],
+                            file.name.replace(/\.[^/.]+$/, '') + '.jpg',
+                            { type: 'image/jpeg' }
+                        );
+                        resolve(compressedFile);
+                    }, 'image/jpeg', JPEG_QUALITY);
+                };
+                img.onerror = () => reject(new Error('تعذر قراءة الصورة'));
+                img.src = e.target.result;
+            };
+            reader.onerror = () => reject(new Error('تعذر قراءة الملف'));
+            reader.readAsDataURL(file);
+        });
+    }
+
     function wireUpload(inputId, required) {
         const input = document.getElementById(inputId);
         const zone = input.previousElementSibling;
@@ -260,7 +329,7 @@
         const preview = zone.querySelector('.preview');
         const groupId = 'group-' + inputId;
 
-        input.addEventListener('change', () => {
+        input.addEventListener('change', async () => {
             const file = input.files[0];
             if (!file) {
                 fieldState[inputId] = !required;
@@ -272,7 +341,6 @@
             }
 
             const isImage = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
-            const isSmallEnough = file.size <= MAX_BYTES;
 
             if (!isImage) {
                 fieldState[inputId] = false;
@@ -283,26 +351,34 @@
                 return;
             }
 
-            if (!isSmallEnough) {
+            setFieldStatus(groupId, null, 'جاري ضغط الصورة...');
+            fieldState[inputId] = false;
+            updateSubmitState();
+
+            try {
+                const originalSizeMb = (file.size / (1024 * 1024)).toFixed(1);
+                const compressedFile = await compressImageFile(file);
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(compressedFile);
+                input.files = dataTransfer.files;
+
+                const newSizeKb = (compressedFile.size / 1024).toFixed(0);
+                fieldState[inputId] = true;
+                setFieldStatus(groupId, true, `تم ضغط الصورة: من ${originalSizeMb} ميجابايت إلى ${newSizeKb} كيلوبايت`);
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    label.classList.add('hidden');
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (err) {
                 fieldState[inputId] = false;
-                const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-                setFieldStatus(groupId, false, `حجم الصورة ${sizeMb} ميجابايت. الحد الأقصى هو 25 ميجابايت.`);
-                preview.classList.add('hidden');
-                label.classList.remove('hidden');
-                updateSubmitState();
-                return;
+                setFieldStatus(groupId, false, 'تعذر ضغط الصورة، حاول باختيار صورة أخرى.');
             }
 
-            fieldState[inputId] = true;
-            setFieldStatus(groupId, true, `تم اختيار: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} ميجابايت)`);
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                label.classList.add('hidden');
-            };
-            reader.readAsDataURL(file);
             updateSubmitState();
         });
     }
