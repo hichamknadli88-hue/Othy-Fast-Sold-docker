@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 
 class RechargeController extends Controller
 {
@@ -36,6 +34,7 @@ class RechargeController extends Controller
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
             'account_id' => ['required', 'string', 'max:255'],
+            'fullName' => ['required', 'string', 'min:3', 'max:100'],
             'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
             'platform' => ['required', 'string'],
             'recharge_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp'],
@@ -44,6 +43,8 @@ class RechargeController extends Controller
             'montant.required' => 'المبلغ إجباري.',
             'montant.min' => 'يجب أن يكون المبلغ أكبر من 1 درهم.',
             'account_id.required' => 'ID الحساب إجباري.',
+            'fullName.required' => 'الاسم الكامل إجباري.',
+            'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
             'recharge_code.required' => 'كود التعبئة إجباري.',
             'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
@@ -61,7 +62,6 @@ class RechargeController extends Controller
         }
 
         try {
-            // ضغط الصور في الذاكرة مباشرة (بدون تخزينها في storage)
             $imageBinary = $this->compressImage($request->file('recharge_image'));
 
             $screenshotBinary = null;
@@ -72,6 +72,7 @@ class RechargeController extends Controller
             $message = "🔔 *طلب شحن جديد*\n\n" .
                 "💰 المبلغ: {$validated['montant']}\n" .
                 "🆔 ID الحساب: {$validated['account_id']}\n" .
+                "👤 الاسم الكامل: {$validated['fullName']}\n" .
                 "🎟 الكود: {$validated['recharge_code']}\n" .
                 "🎮 المنصة: " . strtoupper($validated['platform']);
 
