@@ -17,7 +17,7 @@ class RechargeController extends Controller
 
     private const DECAY_SECONDS = 300;
 
-    private const MAX_IMAGE_KB =15360;
+    private const MAX_IMAGE_KB = 5120;
 
     public function index()
     {
@@ -43,13 +43,12 @@ class RechargeController extends Controller
             'montant' => ['required', 'numeric', 'gt:1'],
             'account_id' => ['required', 'string', 'max:50'],
 
-            'recharge_code' => ['required', 'digits:16'],
+            'recharge_code' => ['required', 'digits:14'],
 
-            'fullName' => [
+            'whatsapp_number' => [
                 'required',
                 'string',
-                'min:3',
-                'max:25'
+                'regex:/^(0[5-7][0-9]{8}|\+212[5-7][0-9]{8})$/',
             ],
 
             'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
@@ -69,11 +68,17 @@ class RechargeController extends Controller
         ], [
             'montant.gt' => 'يجب أن يكون المبلغ أكبر من 1 درهم.',
             'recharge_code.digits' => 'يجب أن يتكون كود التعبئة من 14 رقماً بالضبط.',
-            'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
+            'whatsapp_number.regex' => 'رقم الواتساب غير صحيح. استعمل صيغة 06XXXXXXXX أو +212XXXXXXXXX.',
             'platform.in' => 'المنصة المختارة غير صحيحة.',
             'recharge_image.required' => 'صورة إثبات التعبئة إجبارية.',
             'recharge_image.max' => 'حجم صورة التعبئة يجب أن لا يتجاوز 5 ميغا.',
+            'recharge_image.uploaded' => 'فشل رفع صورة التعبئة، حاول مرة أخرى بصورة أصغر حجماً أو تحقق من اتصالك بالإنترنت.',
+            'recharge_image.image' => 'صورة إثبات التعبئة غير صالحة.',
+            'recharge_image.mimes' => 'صيغة صورة التعبئة يجب أن تكون JPG أو PNG أو WEBP.',
             'platform_screenshot.max' => 'حجم السكرين شوت يجب أن لا يتجاوز 5 ميغا.',
+            'platform_screenshot.uploaded' => 'فشل رفع السكرين شوت، حاول مرة أخرى بصورة أصغر حجماً.',
+            'platform_screenshot.image' => 'السكرين شوت غير صالح.',
+            'platform_screenshot.mimes' => 'صيغة السكرين شوت يجب أن تكون JPG أو PNG أو WEBP.',
         ]);
 
         RateLimiter::hit($rateLimitKey, self::DECAY_SECONDS);
@@ -89,12 +94,11 @@ class RechargeController extends Controller
                 ->with('error', 'خطأ في إعدادات الخادم. المرجو التواصل مع الدعم.');
         }
 
-        $message =
-        "🔔 *طلب شحن جديد*\n\n" .
+        $message = "🔔 *طلب شحن جديد*\n\n" .
             "💰 المبلغ: {$validated['montant']}\n" .
-            "🆔 ID : {$validated['account_id']}\n" .
+            "🆔 ID الحساب: {$validated['account_id']}\n" .
             "🎟 الكود: {$validated['recharge_code']}\n" .
-            "👤 الاسم الكامل: {$validated['fullName']}\n" .
+            "📞 الواتساب: {$validated['whatsapp_number']}\n" .
             "🎮 المنصة: " . strtoupper($validated['platform']);
 
         $media = [
