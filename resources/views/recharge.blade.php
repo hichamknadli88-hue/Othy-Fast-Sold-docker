@@ -97,19 +97,19 @@
                     </div>
                 </div>
 
-                {{-- كود التعبئة --}}
+                {{-- كود التعبئة (تم تعديله إلى 16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
                     <label for="recharge_code" class="block mb-2 text-sm font-semibold text-gray-300">
                         كود التعبئة <span class="text-red-500">*</span>
-                        <span class="text-gray-400 font-normal">(14 رقم بالضبط)</span>
+                        <span class="text-gray-400 font-normal">(16 رقم بالضبط)</span>
                     </label>
                     <input type="text" inputmode="numeric" id="recharge_code" name="recharge_code" value="{{ old('recharge_code') }}"
-                           maxlength="14" placeholder="14 رقم"
+                           maxlength="16" placeholder="16 رقم"
                            class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition tracking-widest"
                            required>
                     <div class="flex justify-between mt-1.5">
                         <p class="hint text-xs text-gray-400">أرقام فقط، بدون مسافات أو رموز.</p>
-                        <span id="code-counter" class="text-xs text-gray-400 font-mono">0/14</span>
+                        <span id="code-counter" class="text-xs text-gray-400 font-mono">0/16</span>
                     </div>
                 </div>
 
@@ -141,7 +141,7 @@
                     </div>
                 </div>
 
-                {{-- صورة إثبات التعبئة (تم إرجاع الحد إلى 5124 كيلوبايت) --}}
+                {{-- صورة إثبات التعبئة --}}
                 <div class="mb-5" id="group-recharge_image">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">صورة إثبات التعبئة <span class="text-red-500">*</span></label>
                     <label for="recharge_image" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
@@ -153,7 +153,7 @@
                     <p class="hint text-xs mt-1.5 text-gray-400">إجبارية.</p>
                 </div>
 
-                {{-- سكرين شوت اختياري (تم إرجاع الحد إلى 5124 كيلوبايت) --}}
+                {{-- سكرين شوت اختياري --}}
                 <div class="mb-6" id="group-platform_screenshot">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">سكرين شوت (ID + البرومو كود) <span class="text-gray-400 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
@@ -197,7 +197,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
     const submitSpinner = document.getElementById('submitSpinner');
-    const MAX_BYTES = 5124 * 1024; // الحد الأقصى مطابق تماماً لـ 5124 كيلوبايت
+    const MAX_BYTES = 5124 * 1024;
 
     const fieldState = {
         montant: false,
@@ -249,12 +249,13 @@
     const rechargeCode = document.getElementById('recharge_code');
     const codeCounter = document.getElementById('code-counter');
     rechargeCode.addEventListener('input', () => {
-        rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 14);
-        codeCounter.textContent = rechargeCode.value.length + '/14';
-        const ok = rechargeCode.value.length === 14;
+        // تعديل الحد الأقصى إلى 16 رقم
+        rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 16);
+        codeCounter.textContent = rechargeCode.value.length + '/16';
+        const ok = rechargeCode.value.length === 16;
         fieldState.recharge_code = ok;
         setFieldStatus('group-recharge_code', rechargeCode.value.length === 0 ? null : ok,
-            ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 14 رقماً بالضبط.');
+            ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 16 رقماً بالضبط.');
         updateSubmitState();
     });
 
