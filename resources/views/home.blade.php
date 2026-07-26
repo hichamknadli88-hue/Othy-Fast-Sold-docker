@@ -181,11 +181,19 @@
             </a>
         </div>
 
-        <!-- زر مجموعة تليجرام تحت الزرين مباشرة -->
-        <div class="w-full max-w-md mb-16">
-            <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full">
+        <!-- أزرار التليجرام الجديدة والمجموعات -->
+        <div class="w-full max-w-md flex flex-col gap-3 mb-16">
+            <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full text-xs md:text-sm">
                 <i class="fab fa-telegram text-lg"></i>
-                انضم الى مجموعتنا
+                🔥 مرحبا بكم فـ OTHY FAST SOLD 🔥 القناة الرسمية
+            </a>
+            <a href="https://t.me/OthyFastSold" target="_blank" class="cta-btn bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 w-full text-xs md:text-sm">
+                <i class="fab fa-telegram text-lg"></i>
+                🔥 هنا كيبدا الربح! توقعات مختارة بعناية
+            </a>
+            <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 w-full text-xs md:text-sm">
+                <i class="fab fa-telegram text-lg"></i>
+                انضم الى مجموعة التوقعات
             </a>
         </div>
 
@@ -251,7 +259,7 @@
                 <h4 class="text-blue-500 font-bold mb-4 border-b border-slate-800 pb-2">تيلغرام</h4>
                 <div class="space-y-3">
                     <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> القناة الرسمية</a>
-                    <a href="https://t.me/Othyfastsold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> الدعم الفوري</a>
+                    <a href="https://t.me/OthyFastSold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> الدعم الفوري</a>
                     <a href="https://t.me/othy_fast_prono" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> مجموعة التوقعات</a>
                 </div>
             </div>
