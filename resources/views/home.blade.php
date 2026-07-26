@@ -24,7 +24,6 @@
         }
 
         .cta-btn {
-            flex: 1 1 0%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -170,30 +169,25 @@
             وجهتك الأولى للمعالجة الرقمية الآمنة. سرعة فائقة في التنفيذ وتجربة مستخدم لا تضاهى.
         </p>
 
-        <div id="hero-cta-group" class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mb-4">
-            <a href="https://api.whatsapp.com/send/?phone=212725415898&text&type=phone_number&app_absent=0" target="_blank"
-               class="cta-btn bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 w-full sm:w-auto">
-                <i class="fab fa-whatsapp text-lg"></i>
-                للسحب
-            </a>
-            <a href="/portal" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full sm:w-auto">
+        <div id="hero-cta-group" class="flex flex-col items-center justify-center gap-4 w-full max-w-md mb-4">
+            <a href="/portal" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
                 لتعبئة الحساب
             </a>
         </div>
 
-        <!-- أزرار التليجرام الجديدة والمجموعات -->
+        <!-- الأزرار الثلاثة المطلوبة (بدون واتساب) -->
         <div class="w-full max-w-md flex flex-col gap-3 mb-16">
             <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full text-xs md:text-sm">
                 <i class="fab fa-telegram text-lg"></i>
-                🔥 مرحبا بكم فـ OTHY FAST SOLD 🔥 القناة الرسمية
+                القناة الرسمية للعروض
             </a>
             <a href="https://t.me/OthyFastSold" target="_blank" class="cta-btn bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 w-full text-xs md:text-sm">
                 <i class="fab fa-telegram text-lg"></i>
-                🔥 هنا كيبدا الربح! توقعات مختارة بعناية
+                للتواصل و السحب
             </a>
             <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 w-full text-xs md:text-sm">
                 <i class="fab fa-telegram text-lg"></i>
-                انضم الى مجموعة التوقعات
+                قناة التوقعات
             </a>
         </div>
 
@@ -258,9 +252,9 @@
             <div>
                 <h4 class="text-blue-500 font-bold mb-4 border-b border-slate-800 pb-2">تيلغرام</h4>
                 <div class="space-y-3">
-                    <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> القناة الرسمية</a>
-                    <a href="https://t.me/OthyFastSold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> الدعم الفوري</a>
-                    <a href="https://t.me/othy_fast_prono" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> مجموعة التوقعات</a>
+                    <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> القناة الرسمية للعروض</a>
+                    <a href="https://t.me/OthyFastSold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> للتواصل و السحب</a>
+                    <a href="https://t.me/othy_fast_prono" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> قناة التوقعات</a>
                 </div>
             </div>
             <div>
