@@ -13,8 +13,6 @@
         .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .field-ok input, .field-ok textarea { border-color: #16a34a !important; }
         .field-error input, .field-error textarea { border-color: #dc2626 !important; }
-        .spin { animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
         .platform-card input:checked + label { border-color: #2563eb; background: rgba(37,99,235,0.2); box-shadow: 0 0 0 2px rgba(37,99,235,0.4); }
     </style>
 </head>
@@ -165,7 +163,6 @@
 
                 <button type="submit" id="submitBtn"
                         class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-lg transition flex items-center justify-center gap-2 shadow-lg">
-                    <i class="fa-solid fa-spinner spin hidden" id="submitSpinner"></i>
                     <span id="submitLabel">إرسال الطلب</span>
                 </button>
             </form>
@@ -195,7 +192,6 @@
     const form = document.getElementById('rechargeForm');
     const submitBtn = document.getElementById('submitBtn');
     const submitLabel = document.getElementById('submitLabel');
-    const submitSpinner = document.getElementById('submitSpinner');
 
     const MAX_DIMENSION = 1600;
     const JPEG_QUALITY = 0.75;
@@ -420,7 +416,6 @@
             return;
         }
         submitBtn.disabled = true;
-        submitSpinner.classList.remove('hidden');
         submitLabel.textContent = 'جاري الإرسال...';
     });
 
