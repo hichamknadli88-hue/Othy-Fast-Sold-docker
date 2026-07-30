@@ -221,6 +221,15 @@
     }
 
     function updateSubmitState() {
+        const countdownEl = document.getElementById('retry-countdown');
+        const isCountingDown = countdownEl && parseInt(countdownEl.dataset.seconds, 10) > 0;
+
+        if (isCountingDown) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            return;
+        }
+
         const allValid = Object.values(fieldState).every(Boolean);
         submitBtn.disabled = !allValid;
         if(submitBtn.disabled) {
@@ -231,43 +240,53 @@
     }
 
     const montant = document.getElementById('montant');
-    montant.addEventListener('input', () => {
+    function validateMontant() {
         const val = parseFloat(montant.value);
         const ok = montant.value !== '' && !isNaN(val) && val > 1;
         fieldState.montant = ok;
-        setFieldStatus('group-montant', ok, ok ? 'المبلغ صحيح.' : 'يجب أن يكون المبلغ أكبر من 1 درهم.');
+        if (montant.value !== '') {
+            setFieldStatus('group-montant', ok, ok ? 'المبلغ صحيح.' : 'يجب أن يكون المبلغ أكبر من 1 درهم.');
+        }
         updateSubmitState();
-    });
+    }
+    montant.addEventListener('input', validateMontant);
 
     const accountId = document.getElementById('account_id');
-    accountId.addEventListener('input', () => {
+    function validateAccountId() {
         const ok = accountId.value.trim().length > 0;
         fieldState.account_id = ok;
-        setFieldStatus('group-account_id', ok, ok ? 'تمام.' : 'ID الحساب إجباري.');
+        if (accountId.value !== '') {
+            setFieldStatus('group-account_id', ok, ok ? 'تمام.' : 'ID الحساب إجباري.');
+        }
         updateSubmitState();
-    });
+    }
+    accountId.addEventListener('input', validateAccountId);
 
     const fullName = document.getElementById('fullName');
-    fullName.addEventListener('input', () => {
+    function validateFullName() {
         const val = fullName.value.trim();
         const ok = val.length >= 3;
         fieldState.fullName = ok;
-        setFieldStatus('group-fullName', val.length === 0 ? null : ok,
-            ok ? 'تمام.' : 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.');
+        if (val.length > 0) {
+            setFieldStatus('group-fullName', ok, ok ? 'تمام.' : 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.');
+        }
         updateSubmitState();
-    });
+    }
+    fullName.addEventListener('input', validateFullName);
 
     const rechargeCode = document.getElementById('recharge_code');
     const codeCounter = document.getElementById('code-counter');
-    rechargeCode.addEventListener('input', () => {
+    function validateRechargeCode() {
         rechargeCode.value = rechargeCode.value.replace(/[^0-9]/g, '').slice(0, 16);
         codeCounter.textContent = rechargeCode.value.length + '/16';
         const ok = rechargeCode.value.length === 16;
         fieldState.recharge_code = ok;
-        setFieldStatus('group-recharge_code', rechargeCode.value.length === 0 ? null : ok,
-            ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 16 رقماً بالضبط.');
+        if (rechargeCode.value.length > 0) {
+            setFieldStatus('group-recharge_code', ok, ok ? 'الكود صحيح.' : 'يجب أن يتكون الكود من 16 رقماً بالضبط.');
+        }
         updateSubmitState();
-    });
+    }
+    rechargeCode.addEventListener('input', validateRechargeCode);
 
     document.querySelectorAll('#group-platform input[type=radio]').forEach(radio => {
         radio.addEventListener('change', () => {
@@ -329,6 +348,10 @@
         const preview = zone.querySelector('.preview');
         const groupId = 'group-' + inputId;
 
+        if (!required) {
+            fieldState[inputId] = true;
+        }
+
         input.addEventListener('change', async () => {
             const file = input.files[0];
             if (!file) {
@@ -386,6 +409,11 @@
     wireUpload('recharge_image', true);
     wireUpload('platform_screenshot', false);
 
+    validateMontant();
+    validateAccountId();
+    validateFullName();
+    validateRechargeCode();
+
     form.addEventListener('submit', (e) => {
         if (submitBtn.disabled) {
             e.preventDefault();
@@ -402,7 +430,8 @@
         const tick = () => {
             if (seconds <= 0) {
                 countdownEl.textContent = 'يمكنك الآن إعادة المحاولة.';
-                submitBtn.disabled = !Object.values(fieldState).every(Boolean);
+                countdownEl.parentElement.style.display = 'none';
+                updateSubmitState();
                 return;
             }
             countdownEl.textContent = `يمكنك إعادة المحاولة بعد ${seconds} ثانية`;
@@ -412,8 +441,6 @@
         submitBtn.disabled = true;
         tick();
     }
-
-    updateSubmitState();
 })();
 </script>
 
