@@ -69,12 +69,13 @@ class RechargeController extends Controller
                 $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
+            // تعديل الرسالة لتكون القيم محاطة بـ Backticks لسهولة النسخ
             $message = "🔔 *طلب شحن جديد*\n\n" .
-                "💰 المبلغ: {$validated['montant']}\n" .
-                "🆔 ID الحساب: {$validated['account_id']}\n" .
-                "👤 الاسم الكامل: {$validated['fullName']}\n" .
-                "🎟 الكود: {$validated['recharge_code']}\n" .
-                "🎮 المنصة: " . strtoupper($validated['platform']);
+                "💰 المبلغ: `{$validated['montant']} DH`\n" .
+                "🆔 ID الحساب: `{$validated['account_id']}`\n" .
+                "👤 الاسم الكامل: `{$validated['fullName']}`\n" .
+                "🎟 الكود: `{$validated['recharge_code']}`\n" .
+                "🎮 المنصة: `" . strtoupper($validated['platform']) . "`";
 
             $media = [
                 [
