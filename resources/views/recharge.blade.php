@@ -95,14 +95,15 @@
                 </div>
 
                 {{-- الاسم الكامل --}}
-                <div class="mb-5" id="group-fullName">
-                    <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
-                    <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
-                           placeholder="الاسم الكامل"
-                           class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
-                           required>
-                    <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري.</p>
-                </div>
+             <div class="mb-5" id="group-fullName">
+                        <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
+                        <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
+                               placeholder="الاسم الكامل"
+                               maxlength="12"
+                               class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
+                               required>
+                        <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري (الحد الأقصى 12 حرف).</p>
+              </div>
 
                 {{-- كود التعبئة (16 رقم) --}}
                 <div class="mb-5" id="group-recharge_code">
