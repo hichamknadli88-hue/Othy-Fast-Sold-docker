@@ -34,7 +34,7 @@ class RechargeController extends Controller
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
             'account_id' => ['required', 'string', 'max:255'],
-            'fullName' => ['required', 'string', 'min:3', 'max:100'],
+            'fullName' => ['required', 'string', 'min:3', 'max:12'], // تم تحديث الحد الأقصى إلى 12 حرف
             'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
             'platform' => ['required', 'string'],
             'recharge_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp'],
@@ -45,6 +45,7 @@ class RechargeController extends Controller
             'account_id.required' => 'ID الحساب إجباري.',
             'fullName.required' => 'الاسم الكامل إجباري.',
             'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
+            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 12 حرفاً.', // رسالة الخطأ الجديدة
             'recharge_code.required' => 'كود التعبئة إجباري.',
             'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
