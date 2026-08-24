@@ -137,7 +137,7 @@
 
     <div class="w-full bg-blue-600/10 py-2.5 border-b border-blue-500/20 text-xs font-bold text-center text-blue-400 marquee-wrap">
         <span class="marquee-track">
-             سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
+            سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
         </span>
     </div>
 
@@ -175,7 +175,6 @@
             </a>
         </div>
 
-        <!-- الأزرار الثلاثة المطلوبة (بدون واتساب) -->
         <div class="w-full max-w-md flex flex-col gap-3 mb-16">
             <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full text-xs md:text-sm">
                 <i class="fab fa-telegram text-lg"></i>
@@ -294,13 +293,13 @@
             ['100 DH', '65 Sold', '75 Sold']
         ];
 
-        // تم إضافة مسارات الصور (Logos) لكل منصة مطابقة لـ asset()
-        const platforms = {
-            '1XBT':    { code: 'OTHY077', url: 'https://1xbet.com/registration/', img: '1xbet.png' },
-            'LINEBET':   { code: 'OTHY07',  url: 'https://linebet.com/registration/', img: 'linebet.png' },
-            'MELBET':    { code: 'OTHY08',  url: 'https://melbet.com/registration/', img: 'melbet.png' },
-            'PARIPULSE': { code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/', img: 'paripulse.png' }
-        };
+        // تم تمرير الروابط الصحيحة لمعالجة دوال Blade بشكل مسبق عبر المتصفح
+        const platforms = [
+            { name: '1XBT',    code: 'OTHY077', url: 'https://1xbet.com/registration/', img: "{{ asset('1xbet.png') }}" },
+            { name: 'LINEBET',   code: 'OTHY07',  url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
+            { name: 'MELBET',    code: 'OTHY08',  url: 'https://melbet.com/registration/', img: "{{ asset('melbet.png') }}" },
+            { name: 'PARIPULSE', code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/', img: "{{ asset('paripulse.png') }}" }
+        ];
 
         const tbody = document.getElementById('price-table-body');
         priceRows.forEach(([amount, normal, withCode]) => {
@@ -315,15 +314,19 @@
         });
 
         const codesSection = document.getElementById('platforms');
-        Object.entries(platforms).forEach(([platform, data]) => {
+        
+        // عكس المصفوفة لتبدأ من اليمين بالشكل الصحيح مع الحفاظ على عمل asset()
+        const reversedPlatforms = [...platforms].reverse();
+
+        reversedPlatforms.forEach(data => {
             const card = document.createElement('div');
             card.className = 'glass-card p-6 rounded-3xl text-center hover:-translate-y-2 hover:border-blue-500/40 transition-all border border-slate-700 flex flex-col justify-between';
             card.innerHTML = `
                 <div>
                     <div class="w-16 h-12 mx-auto mb-4 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center p-1.5 overflow-hidden">
-                        <img src="{{ asset('${data.img}') }}" alt="${platform}" class="max-h-full max-w-full object-contain">
+                        <img src="${data.img}" alt="${data.name}" class="max-h-full max-w-full object-contain">
                     </div>
-                    <div class="text-base md:text-lg font-black tracking-wide text-white mb-1 uppercase">${platform}</div>
+                    <div class="text-base md:text-lg font-black tracking-wide text-white mb-1 uppercase">${data.name}</div>
                     <div class="text-[11px] text-slate-500 mb-3">كود ترويجي</div>
                     <div class="text-2xl font-black text-blue-400 mb-6 tracking-wider">${data.code}</div>
                 </div>
@@ -335,12 +338,15 @@
             codesSection.appendChild(card);
         });
 
-        // Copy/redirect logic with custom confirmation modal
         const copyModalOverlay = document.getElementById('copyModalOverlay');
         const copyModalCode = document.getElementById('copyModalCode');
         const copyModalConfirmBtn = document.getElementById('copyModalConfirmBtn');
         const copyModalCancelBtn = document.getElementById('copyModalCancelBtn');
         let pendingRedirectUrl = null;
+
+        function copyAndExpr(code, url) {
+            // function stub
+        }
 
         function copyAndRedirect(code, url) {
             navigator.clipboard.writeText(code).catch(() => {
@@ -369,7 +375,6 @@
 
         copyModalCancelBtn.addEventListener('click', closeCopyModal);
 
-        // Close modal on backdrop click
         copyModalOverlay.addEventListener('click', (e) => {
             if (e.target === copyModalOverlay) closeCopyModal();
         });
