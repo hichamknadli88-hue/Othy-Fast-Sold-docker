@@ -151,7 +151,7 @@
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
-            <a href="/portal" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
+            <a href="{{ route('recharge.create') }}" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
                 لتعبئة الحساب
             </a>
         </div>
@@ -170,7 +170,7 @@
         </p>
 
         <div id="hero-cta-group" class="flex flex-col items-center justify-center gap-4 w-full max-w-md mb-4">
-            <a href="/portal" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
+            <a href="{{ route('recharge.create') }}" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
                 لتعبئة الحساب
             </a>
         </div>
@@ -293,11 +293,11 @@
             ['100 DH', '65 Sold', '75 Sold']
         ];
 
-        // تم تمرير الروابط الصحيحة لمعالجة دوال Blade بشكل مسبق عبر المتصفح
+        // تم تصحيح أسماء الملفات والامتدادات (1xbet.jfif و melbet.jfif) لتطابق المجلد تماماً
         const platforms = [
-            { name: '1XBT',    code: 'OTHY077', url: 'https://1xbet.com/registration/', img: "{{ asset('1xbet.png') }}" },
-            { name: 'LINEBET',   code: 'OTHY07',  url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
-            { name: 'MELBET',    code: 'OTHY08',  url: 'https://melbet.com/registration/', img: "{{ asset('melbet.png') }}" },
+            { name: '1XBET',    code: 'OTHY077', url: 'https://1xbet.com/registration/', img: "{{ asset('1xbet.jfif') }}" },
+            { name: 'LINEBET',    code: 'OTHY07',  url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
+            { name: 'MELBET',     code: 'OTHY08',  url: 'https://melbet.com/registration/', img: "{{ asset('melbet.jfif') }}" },
             { name: 'PARIPULSE', code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/', img: "{{ asset('paripulse.png') }}" }
         ];
 
@@ -343,10 +343,6 @@
         const copyModalConfirmBtn = document.getElementById('copyModalConfirmBtn');
         const copyModalCancelBtn = document.getElementById('copyModalCancelBtn');
         let pendingRedirectUrl = null;
-
-        function copyAndExpr(code, url) {
-            // function stub
-        }
 
         function copyAndRedirect(code, url) {
             navigator.clipboard.writeText(code).catch(() => {
