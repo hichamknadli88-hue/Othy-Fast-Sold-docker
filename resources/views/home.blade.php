@@ -294,11 +294,12 @@
             ['100 DH', '65 Sold', '75 Sold']
         ];
 
+        // تم إضافة مسارات الصور (Logos) لكل منصة مطابقة لـ asset()
         const platforms = {
-            '1XBT':    { code: 'OTHY077', url: 'https://1xbet.com/registration/' },
-            'LINEBET':   { code: 'OTHY07',  url: 'https://linebet.com/registration/' },
-            'MELBET':    { code: 'OTHY08',  url: 'https://melbet.com/registration/' },
-            'PARIPULSE': { code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/' }
+            '1XBT':    { code: 'OTHY077', url: 'https://1xbet.com/registration/', img: '1xbet.png' },
+            'LINEBET':   { code: 'OTHY07',  url: 'https://linebet.com/registration/', img: 'linebet.png' },
+            'MELBET':    { code: 'OTHY08',  url: 'https://melbet.com/registration/', img: 'melbet.png' },
+            'PARIPULSE': { code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/', img: 'paripulse.png' }
         };
 
         const tbody = document.getElementById('price-table-body');
@@ -316,15 +317,17 @@
         const codesSection = document.getElementById('platforms');
         Object.entries(platforms).forEach(([platform, data]) => {
             const card = document.createElement('div');
-            card.className = 'glass-card p-6 rounded-3xl text-center hover:-translate-y-2 hover:border-blue-500/40 transition-all border border-slate-700';
+            card.className = 'glass-card p-6 rounded-3xl text-center hover:-translate-y-2 hover:border-blue-500/40 transition-all border border-slate-700 flex flex-col justify-between';
             card.innerHTML = `
-                <div class="w-12 h-12 mx-auto mb-4 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-dice text-blue-400 text-lg"></i>
+                <div>
+                    <div class="w-16 h-12 mx-auto mb-4 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center p-1.5 overflow-hidden">
+                        <img src="{{ asset('${data.img}') }}" alt="${platform}" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <div class="text-base md:text-lg font-black tracking-wide text-white mb-1 uppercase">${platform}</div>
+                    <div class="text-[11px] text-slate-500 mb-3">كود ترويجي</div>
+                    <div class="text-2xl font-black text-blue-400 mb-6 tracking-wider">${data.code}</div>
                 </div>
-                <div class="text-base md:text-lg font-black tracking-wide text-white mb-1 uppercase">${platform}</div>
-                <div class="text-[11px] text-slate-500 mb-4">كود ترويجي</div>
-                <div class="text-2xl font-black text-blue-400 mb-6 tracking-wider">${data.code}</div>
-                <button class="w-full py-2.5 bg-slate-800 hover:bg-blue-600 rounded-lg text-xs font-bold transition-all">
+                <button class="w-full py-2.5 bg-slate-800 hover:bg-blue-600 rounded-lg text-xs font-bold transition-all text-white">
                     سجل الآن
                 </button>
             `;
