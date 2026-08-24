@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ asset('1784465709672.png') }}">
     <title>منصة الشحن - Othy Fast Sold</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+        
         /* تنسيق بطاقات المنصات بالصور والتأثيرات البصرية */
         .platform-card input:checked + label {
             border-color: #2563eb;
@@ -50,7 +54,7 @@
         @endif
 
         <!-- الفورم -->
-        <form action="#" method="POST">
+        <form action="#" method="POST" enctype="multipart/form-data">
             @csrf
 
             {{-- 1. اختيار المنصة بالصور --}}
@@ -58,9 +62,8 @@
                 <label class="block mb-3 text-sm font-semibold text-gray-300">اختر المنصة <span class="text-red-500">*</span></label>
                 
                 @php
-                    // مصفوفة كتعرف بأسماء المنصات والملف الموافق ليها في public
-                    $platforms = ['1xbet', 'paripulse', 'linebet', 'melbet'];
-                    $platformImages = [
+                    // ترتيب المنصات وأسماء الصور المطابقة للملفات في مجلد public
+                    $platformsData = [
                         '1xbet'     => '1xbet.png',
                         'paripulse' => 'paripulse.png',
                         'linebet'   => 'linebet.png',
@@ -69,22 +72,19 @@
                 @endphp
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="group-platform">
-                    @foreach($platforms as $platform)
+                    @foreach($platformsData as $platform => $imgFile)
                         @php
-                            $key = strtolower($platform);
-                            $imgName = $platformImages[$key] ?? 'default.png';
+                            $isChecked = strtolower(old('platform', '1xbet')) === $platform;
                         @endphp
                         <div class="platform-card">
                             <input type="radio" name="platform" id="platform-{{ $platform }}" value="{{ $platform }}"
-                                   class="hidden"
-                                   {{ strtolower(old('platform', '1xbet')) === $key ? 'checked' : '' }}>
+                                   class="hidden" {{ $isChecked ? 'checked' : '' }}>
                             
                             <label for="platform-{{ $platform }}"
                                    class="flex flex-col items-center justify-center p-3 h-24 rounded-xl border-2 border-gray-800 bg-gray-800/60 cursor-pointer transition hover:border-blue-500 hover:bg-gray-800 gap-2">
                                 
-                                {{-- عرض اللوغو من public (إذا كان الدوسي فرعي مثلا public/images/ بدلها بـ asset('images/' . $imgName)) --}}
-                                <img src="{{ asset($imgName) }}" alt="{{ $platform }}" class="max-h-12 max-w-full object-contain drop-shadow">
-                                <span class="text-xs font-bold uppercase tracking-wider text-gray-300">{{ $platform }}</span>
+                                <img src="{{ asset($imgFile) }}" alt="{{ strtoupper($platform) }}" class="max-h-10 max-w-full object-contain drop-shadow">
+                                <span class="text-xs font-bold uppercase tracking-wider text-gray-300">{{ strtoupper($platform) }}</span>
                             
                             </label>
                         </div>
