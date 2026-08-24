@@ -128,15 +128,15 @@
                         @foreach($platforms as $platform)
                             @php
                                 $platformLower = strtolower($platform);
-                                $logoUrl = '';
+                                $imgFile = '';
                                 if ($platformLower === '1xbet') {
-                                    $logoUrl = 'https://cryptologos.cc/logos/tether-usdt-logo.svg'; // Placeholder or use correct asset/logo URL
+                                    $imgFile = '1xbet.jfif';
                                 } elseif ($platformLower === 'melbet') {
-                                    $logoUrl = '';
+                                    $imgFile = 'melbet.jfif';
                                 } elseif ($platformLower === 'linebet') {
-                                    $logoUrl = '';
-                                } elseif ($platformLower === 'xbet') {
-                                    $logoUrl = '';
+                                    $imgFile = 'linebet.png';
+                                } elseif ($platformLower === 'paripulse') {
+                                    $imgFile = 'paripulse.png';
                                 }
                             @endphp
                             <div class="platform-card">
@@ -145,12 +145,10 @@
                                        {{ strtolower(old('platform', '1xbet')) === $platformLower ? 'checked' : '' }}>
                                 <label for="platform-{{ $platform }}"
                                        class="flex flex-col items-center justify-center gap-1.5 h-20 rounded-xl border-2 border-gray-700 bg-gray-800 cursor-pointer text-xs font-bold uppercase transition hover:border-blue-500 p-2">
-                                    @if($platformLower === '1xbet')
-                                        <div class="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-white font-black text-xs shadow">1X</div>
-                                    @elseif($platformLower === 'melbet')
-                                        <div class="w-7 h-7 rounded-full bg-yellow-600 flex items-center justify-center text-white font-black text-xs shadow">M</div>
-                                    @elseif($platformLower === 'linebet')
-                                        <div class="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center text-white font-black text-xs shadow">L</div>
+                                    @if($imgFile)
+                                        <div class="w-10 h-7 rounded bg-gray-900 flex items-center justify-center p-0.5 overflow-hidden">
+                                            <img src="{{ asset($imgFile) }}" alt="{{ $platform }}" class="max-h-full max-w-full object-contain">
+                                        </div>
                                     @else
                                         <div class="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-white font-black text-xs shadow"><i class="fa-solid fa-gamepad"></i></div>
                                     @endif
