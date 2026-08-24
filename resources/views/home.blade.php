@@ -151,7 +151,7 @@
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
-            <a href="{{ route('recharge.create') }}" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
+            <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
                 لتعبئة الحساب
             </a>
         </div>
@@ -170,7 +170,7 @@
         </p>
 
         <div id="hero-cta-group" class="flex flex-col items-center justify-center gap-4 w-full max-w-md mb-4">
-            <a href="{{ route('recharge.create') }}" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
+            <a href="{{ route('recharge.form') }}" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
                 لتعبئة الحساب
             </a>
         </div>
@@ -314,7 +314,7 @@
         });
 
         const codesSection = document.getElementById('platforms');
-        
+
         // عكس المصفوفة لتبدأ من اليمين بالشكل الصحيح في الواجهة العربية
         const reversedPlatforms = [...platforms].reverse();
 
