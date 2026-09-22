@@ -33,7 +33,7 @@ class RechargeController extends Controller
 
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
-            'account_id' => ['required', 'numeric','min=1000000','max:10000000000000'],
+          'account_id' => ['required', 'numeric', 'min:9999999', 'max:9999999999999'],
             'fullName' => ['required', 'string', 'min:3', 'max:12'], // تم تحديث الحد الأقصى إلى 12 حرف
             'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
             'platform' => ['required', 'string'],
