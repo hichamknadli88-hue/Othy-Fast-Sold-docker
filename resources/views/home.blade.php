@@ -289,14 +289,11 @@
     <script>
         // amount, عادي, مع كود OTHY, مع كود paripulse & melbet
         const priceRows = [
-            ['10 DH', '6 Sold', '7 Sold', '-'],
-            ['20 DH', '13 Sold', '14 Sold', '-'],
-            ['50 DH', '33 Sold', '37 Sold', '-'],
-            ['100 DH', '65 Sold', '75 Sold', '-'],
-            ['8 DH', '-', '-', '5 Sold'],
-            ['16 DH', '-', '-', '10 Sold'],
-            ['40 DH', '-', '-', '26 Sold'],
-            ['80 DH', '-', '-', '52 Sold']
+            ['10 DH', '6 Sold', '7 Sold', '8 DH'],
+            ['20 DH', '13 Sold', '14 Sold', '16 DH'],
+            ['50 DH', '33 Sold', '37 Sold', '40 DH'],
+            ['100 DH', '65 Sold', '75 Sold', '80 DH']
+    
         ];
 
         // مصفوفة المنصات مع ربط الصور بالامتدادات الصحيحة الموجودة في مجلد public لديك (1xbet.jfif و melbet.jfif)
