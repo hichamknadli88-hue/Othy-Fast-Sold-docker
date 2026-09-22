@@ -293,6 +293,15 @@
         }
         updateSubmitState();
     }
+    // Blocks the keystroke/paste itself once 13 digits are already present,
+    // so non-digit characters can never "free up room" under maxlength.
+    accountId.addEventListener('beforeinput', (e) => {
+        const hasSelection = accountId.selectionStart !== accountId.selectionEnd;
+        const digitsOnly = accountId.value.replace(/[^0-9]/g, '');
+        if (!hasSelection && digitsOnly.length >= 13 && e.inputType && e.inputType.startsWith('insert')) {
+            e.preventDefault();
+        }
+    });
     accountId.addEventListener('input', validateAccountId);
 
     const fullName = document.getElementById('fullName');
