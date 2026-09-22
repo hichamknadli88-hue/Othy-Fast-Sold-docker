@@ -102,11 +102,12 @@
                     {{-- ID الحساب --}}
                     <div class="mb-5" id="group-account_id">
                         <label for="account_id" class="block mb-2 text-sm font-semibold text-gray-300">ID الحساب <span class="text-red-500">*</span></label>
-                        <input type="text" id="account_id" name="account_id" value="{{ old('account_id') }}"
-                               placeholder="مثال: 123456789"
+                        <input type="text" inputmode="numeric" id="account_id" name="account_id" value="{{ old('account_id') }}"
+                               placeholder="مثال: 1234567"
+                               maxlength="13"
                                class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
                                required>
-                        <p class="hint text-xs mt-1.5 text-gray-400">تأكد من ID الحساب قبل الإرسال.</p>
+                        <p class="hint text-xs mt-1.5 text-gray-400">أرقام فقط، من 7 إلى 13 رقم.</p>
                     </div>
                 </div>
 
@@ -283,10 +284,12 @@
 
     const accountId = document.getElementById('account_id');
     function validateAccountId() {
-        const ok = accountId.value.trim().length > 0;
+        accountId.value = accountId.value.replace(/[^0-9]/g, '').slice(0, 13);
+        const len = accountId.value.length;
+        const ok = len >= 7 && len <= 13;
         fieldState.account_id = ok;
-        if (accountId.value !== '') {
-            setFieldStatus('group-account_id', ok, ok ? 'تمام.' : 'ID الحساب إجباري.');
+        if (len > 0) {
+            setFieldStatus('group-account_id', ok, ok ? 'تمام.' : 'ID الحساب يجب أن يتكون من 7 إلى 13 رقم.');
         }
         updateSubmitState();
     }
