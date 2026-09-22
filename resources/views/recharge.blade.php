@@ -11,9 +11,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
         body { font-family: 'Cairo', sans-serif; background-color: #020617; color: #f8fafc; }
         .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .field-ok input, .field-ok textarea { border-color: #16a34a !important; }
-        .field-error input, .field-error textarea { border-color: #dc2626 !important; }
+        .field-ok input, .field-ok textarea, .field-ok select { border-color: #16a34a !important; }
+        .field-error input, .field-error textarea, .field-error select { border-color: #dc2626 !important; }
         .platform-card input:checked + label { border-color: #2563eb; background: rgba(37,99,235,0.2); box-shadow: 0 0 0 2px rgba(37,99,235,0.4); }
+
+        /* Custom themed select for montant */
+        #montant {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: none;
+        }
+        #montant option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -74,13 +86,17 @@
                     <div class="mb-5" id="group-montant">
                         <label for="montant" class="block mb-2 text-sm font-semibold text-gray-300">المبلغ (Amount) <span class="text-red-500">*</span></label>
                         <div class="relative">
-                            <input type="number" inputmode="decimal" step="0.01" min="1.01" id="montant" name="montant" value="{{ old('montant') }}"
-                                   placeholder="مثال: 50"
-                                   class="w-full h-12 p-3 pl-10 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
-                                   required>
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">DH</span>
+                            <select id="montant" name="montant"
+                                    class="w-full h-12 p-3 pl-10 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition cursor-pointer"
+                                    required>
+                                <option value="" disabled {{ old('montant') ? '' : 'selected' }}>اختر المبلغ</option>
+                                @foreach([5, 10, 20, 30, 50, 100, 200, 500, 1000] as $amount)
+                                    <option value="{{ $amount }}" {{ (string) old('montant') === (string) $amount ? 'selected' : '' }}>{{ $amount }} DH</option>
+                                @endforeach
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
                         </div>
-                        <p class="hint text-xs mt-1.5 text-gray-400">يجب أن يكون المبلغ أكبر من 1 درهم.</p>
+                        <p class="hint text-xs mt-1.5 text-gray-400">اختر المبلغ الذي تريد تعبئته.</p>
                     </div>
 
                     {{-- ID الحساب --}}
@@ -258,15 +274,12 @@
 
     const montant = document.getElementById('montant');
     function validateMontant() {
-        const val = parseFloat(montant.value);
-        const ok = montant.value !== '' && !isNaN(val) && val > 1;
+        const ok = montant.value !== '';
         fieldState.montant = ok;
-        if (montant.value !== '') {
-            setFieldStatus('group-montant', ok, ok ? 'المبلغ صحيح.' : 'يجب أن يكون المبلغ أكبر من 1 درهم.');
-        }
+        setFieldStatus('group-montant', ok ? true : null, ok ? 'تمام، المبلغ المحدد: ' + montant.value + ' DH' : null);
         updateSubmitState();
     }
-    montant.addEventListener('input', validateMontant);
+    montant.addEventListener('change', validateMontant);
 
     const accountId = document.getElementById('account_id');
     function validateAccountId() {
@@ -426,7 +439,6 @@
     wireUpload('recharge_image', true);
     wireUpload('platform_screenshot', false);
 
-    validateMontant();
     validateAccountId();
     validateFullName();
     validateRechargeCode();
