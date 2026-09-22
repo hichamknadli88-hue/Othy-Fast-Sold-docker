@@ -209,15 +209,16 @@
     <section id="pricing" class="max-w-4xl mx-auto px-6 mb-24">
         <div class="text-center mb-10">
             <h2 class="text-3xl font-black mb-3 text-white">جدول الأسعار</h2>
-            <p class="text-slate-400 text-sm max-w-lg mx-auto">أسعار واضحة وثابتة، مع مزايا إضافية عند استخدام كود OTHY.</p>
+            <p class="text-slate-400 text-sm max-w-lg mx-auto">أسعار واضحة وثابتة، مع مزايا إضافية عند استخدام كود OTHY أو كود paripulse &amp; melbet.</p>
         </div>
-        <div class="glass-card rounded-3xl p-6 border border-slate-700/50">
-            <table class="w-full text-center">
+        <div class="glass-card rounded-3xl p-6 border border-slate-700/50 overflow-x-auto">
+            <table class="w-full text-center min-w-[560px]">
                 <thead>
                     <tr class="text-slate-400 border-b border-slate-700/50">
                         <th class="py-4 font-bold">المبلغ</th>
                         <th class="py-4 font-bold">عادي</th>
                         <th class="py-4 font-bold text-blue-400">مع كود OTHY</th>
+                        <th class="py-4 font-bold text-indigo-400">مع كود paripulse &amp; melbet</th>
                     </tr>
                 </thead>
                 <tbody id="price-table-body" class="text-slate-200"></tbody>
@@ -286,11 +287,16 @@
     </div>
 
     <script>
+        // amount, عادي, مع كود OTHY, مع كود paripulse & melbet
         const priceRows = [
-            ['10 DH', '6 Sold', '7 Sold'],
-            ['20 DH', '13 Sold', '14 Sold'],
-            ['50 DH', '33 Sold', '37 Sold'],
-            ['100 DH', '65 Sold', '75 Sold']
+            ['10 DH', '6 Sold', '7 Sold', '-'],
+            ['20 DH', '13 Sold', '14 Sold', '-'],
+            ['50 DH', '33 Sold', '37 Sold', '-'],
+            ['100 DH', '65 Sold', '75 Sold', '-'],
+            ['8 DH', '-', '-', '5 Sold'],
+            ['16 DH', '-', '-', '10 Sold'],
+            ['40 DH', '-', '-', '26 Sold'],
+            ['80 DH', '-', '-', '52 Sold']
         ];
 
         // مصفوفة المنصات مع ربط الصور بالامتدادات الصحيحة الموجودة في مجلد public لديك (1xbet.jfif و melbet.jfif)
@@ -302,13 +308,14 @@
         ];
 
         const tbody = document.getElementById('price-table-body');
-        priceRows.forEach(([amount, normal, withCode]) => {
+        priceRows.forEach(([amount, normal, withCode, withParipulseMelbet]) => {
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-white/5 transition-colors border-b border-slate-800/40';
             tr.innerHTML = `
                 <td class="py-4 font-bold text-white">${amount}</td>
                 <td class="py-4 text-slate-300">${normal}</td>
                 <td class="py-4 text-blue-400 font-bold">${withCode}</td>
+                <td class="py-4 text-indigo-400 font-bold">${withParipulseMelbet}</td>
             `;
             tbody.appendChild(tr);
         });
