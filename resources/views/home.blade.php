@@ -217,7 +217,7 @@
                     <tr class="text-slate-400 border-b border-slate-700/50">
                         <th class="py-4 font-bold">المبلغ</th>
                         <th class="py-4 font-bold">عادي</th>
-                        <th class="py-4 font-bold text-blue-400">مع كود OTHY</th>
+                        <th class="py-4 font-bold text-blue-400">مع كود OTHY (1xbet & linebet)</th>
                         <th class="py-4 font-bold text-indigo-400">مع كود paripulse &amp; melbet</th>
                     </tr>
                 </thead>
