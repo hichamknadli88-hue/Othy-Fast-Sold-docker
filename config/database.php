@@ -114,6 +114,32 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        /*
+        |
+        | Future MySQL connection (for upcoming features).
+        | This connection is intentionally separate from the default
+        | DB config so it won't affect the running app until used.
+        */
+        'future_mysql' => [
+            'driver' => 'mysql',
+            'url' => env('FUTURE_DB_URL'),
+            'host' => env('FUTURE_DB_HOST', '127.0.0.1'),
+            'port' => env('FUTURE_DB_PORT', '33060'),
+            'database' => env('FUTURE_DB_DATABASE', 'future_app'),
+            'username' => env('FUTURE_DB_USERNAME', 'future_user'),
+            'password' => env('FUTURE_DB_PASSWORD', 'future_pass'),
+            'unix_socket' => env('FUTURE_DB_SOCKET', ''),
+            'charset' => env('FUTURE_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('FUTURE_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Mysql::ATTR_SSL_CA => env('FUTURE_MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
     ],
 
     /*

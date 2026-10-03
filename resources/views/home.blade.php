@@ -9,7 +9,13 @@
     <title>OTHY FAST SOLD | بوابتك للخدمات الرقمية</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        body { font-family: 'Cairo', sans-serif; background-color: #020617; }
+        html{
+            scroll-behavior: smooth
+        }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #020617; 
+        }
         .glass-card { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
 
         .marquee-wrap { overflow: hidden; white-space: nowrap; }
@@ -135,6 +141,8 @@
 </head>
 <body class="text-slate-200 min-h-screen overflow-x-hidden">
 
+    @include('partials.annonce-popup')
+
     <div class="w-full bg-blue-600/10 py-2.5 border-b border-blue-500/20 text-xs font-bold text-center text-blue-400 marquee-wrap">
         <span class="marquee-track">
             سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
@@ -151,9 +159,31 @@
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
-            <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-5 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
-                لتعبئة الحساب
-            </a>
+            
+            <div class="flex items-center gap-3">
+                <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
+                    لتعبئة الحساب
+                </a>
+                @auth
+                    @admin
+                        <a href="{{ route('admin.dashboard') }}" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white">
+                            لوحة التحكم
+                        </a>
+                    @endadmin
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-slate-200 transition-all">
+                            <i class="fa-solid fa-right-from-bracket ml-1"></i> تسجيل الخروج
+                        </button>
+                    </form>
+                @elseguest
+                    <a href="{{ route('login') }}" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white">
+                       تسجيل الدخول  
+                    </a>
+                @endauth
+
+
+            </div>
         </div>
     </nav>
 
@@ -162,9 +192,13 @@
             بوابتك الموثوقة للمعالجة الرقمية
         </span>
 
-        <h1 class="text-5xl md:text-6xl font-black mb-6 tracking-tighter leading-tight text-white">
+        <h1 class="text-5xl md:text-6xl font-black mb-2 tracking-tighter leading-tight text-white">
             OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
         </h1>
+
+        <!-- Lottie animation (between title and subtitle) -->
+        <div id="hero-lottie" class="w-48 h-48 md:w-64 md:h-44 mx-auto mb-2"></div>
+
         <p class="text-slate-400 text-lg md:text-xl mb-12 max-w-xl leading-relaxed">
             وجهتك الأولى للمعالجة الرقمية الآمنة. سرعة فائقة في التنفيذ وتجربة مستخدم لا تضاهى.
         </p>
@@ -286,6 +320,19 @@
         </div>
     </div>
 
+    <!-- Lottie library + hero animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script>
+        lottie.loadAnimation({
+            container: document.getElementById('hero-lottie'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            // Put your file at public/animations/animation.json (or change this path)
+            path: "{{ asset('animations/animation.json') }}"
+        });
+    </script>
+
     <script>
         // amount, عادي, مع كود OTHY, مع كود paripulse & melbet
         const priceRows = [
@@ -293,7 +340,7 @@
             ['20 DH', '12 DH', '14 DH', '16 DH'],
             ['50 DH', '33 DH', '37 DH', '40 DH'],
             ['100 DH', '65 DH', '75 DH', '80 DH']
-    
+
         ];
 
         // مصفوفة المنصات مع ربط الصور بالامتدادات الصحيحة الموجودة في مجلد public لديك (1xbet.jfif و melbet.jfif)

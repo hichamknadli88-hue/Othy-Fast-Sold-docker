@@ -14,24 +14,13 @@
         .field-ok input, .field-ok textarea, .field-ok select { border-color: #16a34a !important; }
         .field-error input, .field-error textarea, .field-error select { border-color: #dc2626 !important; }
         .platform-card input:checked + label { border-color: #2563eb; background: rgba(37,99,235,0.2); box-shadow: 0 0 0 2px rgba(37,99,235,0.4); }
-
-        /* Custom themed select for montant */
-        #montant {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: none;
-        }
-        #montant option {
-            background-color: #1e293b;
-            color: #f8fafc;
-        }
     </style>
 </head>
 <body class="min-h-screen">
 
+
     <!-- Nav bar -->
-    <nav class="w-full border-b border-gray-800 bg-gray-950/80 backdrop-blur-md sticky top-0 z-50">
+    <nav class="w-full border-b border-gray-800 bg-gray-black/100 backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
             <a href="{{ route('home') }}" class="text-lg font-black tracking-tight text-white">
                 OTHY <span class="text-blue-400">FAST SOLD</span>
@@ -78,12 +67,43 @@
                 </div>
             @endif
 
+            @php
+                $loggedIn = auth()->check();
+                $showRechargeModes = $loggedIn && ($canRepeatRecharge ?? false);
+                $defaultMode = old('recharge_mode', $showRechargeModes ? 'existing' : 'new');
+                $savedCount = isset($savedPlatforms) ? $savedPlatforms->count() : 0;
+            @endphp
+
+            @if($loggedIn)
+                <p class="text-center text-sm text-gray-400 mb-6">
+                    مسجل الدخول كـ <span class="text-blue-400 font-bold">{{ auth()->user()->name }}</span>
+                </p>
+            @endif
+
             <form action="{{ route('recharge.store') }}" method="POST" enctype="multipart/form-data" id="rechargeForm" novalidate>
                 @csrf
 
+                @if($showRechargeModes)
+                    <input type="hidden" name="recharge_mode" id="recharge_mode" value="{{ $defaultMode }}">
+                    <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3" id="recharge-mode-section">
+                        <button type="button" data-mode="existing"
+                                class="recharge-mode-btn rounded-2xl border-2 p-4 text-right transition {{ $defaultMode === 'existing' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50 hover:border-gray-600' }}">
+                            <span class="block text-sm font-black text-white mb-1">تعبئة حساب موجود</span>
+                            <span class="block text-xs text-gray-400">اختر المبلغ، أدخل الكود وارفع صورة التعبئة فقط.</span>
+                        </button>
+                        <button type="button" data-mode="new"
+                                class="recharge-mode-btn rounded-2xl border-2 p-4 text-right transition {{ $defaultMode === 'new' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50 hover:border-gray-600' }}">
+                            <span class="block text-sm font-black text-white mb-1">تعبئة منصة جديدة</span>
+                            <span class="block text-xs text-gray-400">املأ كل معلومات الحساب والمنصة كما في المرة الأولى.</span>
+                        </button>
+                    </div>
+                @else
+                    <input type="hidden" name="recharge_mode" id="recharge_mode" value="new">
+                @endif
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-1">
                     {{-- المبلغ --}}
-                    <div class="mb-5" id="group-montant">
+                    <div class="mb-5 md:col-span-2" id="group-montant">
                         <label for="montant" class="block mb-2 text-sm font-semibold text-gray-300">المبلغ (Amount) <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <select id="montant" name="montant"
@@ -99,8 +119,8 @@
                         <p class="hint text-xs mt-1.5 text-gray-400">اختر المبلغ الذي تريد تعبئته.</p>
                     </div>
 
-                    {{-- ID الحساب --}}
-                    <div class="mb-5" id="group-account_id">
+                    {{-- ID الحساب (منصة جديدة فقط) --}}
+                    <div class="mb-5 fields-new-only-block" id="group-account_id">
                         <label for="account_id" class="block mb-2 text-sm font-semibold text-gray-300">ID الحساب <span class="text-red-500">*</span></label>
                         <input type="text" inputmode="numeric" id="account_id" name="account_id" value="{{ old('account_id') }}"
                                placeholder="مثال: 1234567"
@@ -111,15 +131,15 @@
                     </div>
                 </div>
 
-                {{-- الاسم الكامل --}}
-             <div class="mb-5" id="group-fullName">
+                {{-- الاسم الكامل (منصة جديدة فقط) --}}
+             <div class="mb-5 fields-new-only-block" id="group-fullName">
                         <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
                         <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
                                placeholder="الاسم الكامل"
-                               maxlength="12"
+                               maxlength="15"
                                class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
                                required>
-                        <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري (الحد الأقصى 12 حرف).</p>
+                        <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري (الحد الأقصى 15 حرف).</p>
              </div>
 
                 {{-- كود التعبئة (16 رقم) --}}
@@ -138,8 +158,67 @@
                     </div>
                 </div>
 
-                {{-- المنصة --}}
-                <div class="mb-5">
+                @if($showRechargeModes && $savedCount === 1)
+                    @php $onlySaved = $savedPlatforms->first(); @endphp
+                    <div class="mb-5 hidden existing-mode-block" id="fields-existing-single">
+                        <div class="rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4 text-sm">
+                            <p class="text-gray-300 mb-2 font-semibold">الحساب المحفوظ لهذه التعبئة</p>
+                            <p class="text-white"><span class="text-gray-400">المنصة:</span> {{ strtoupper($onlySaved->platform) }}</p>
+                            <p class="text-white"><span class="text-gray-400">ID الحساب:</span> <span class="font-mono text-blue-300">{{ $onlySaved->account_id }}</span></p>
+                            <p class="text-white"><span class="text-gray-400">الاسم:</span> {{ $onlySaved->full_name }}</p>
+                            <p class="text-xs text-gray-400 mt-2">يُرسل ID والمنصة تلقائياً — لا حاجة لإدخالهما.</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if($showRechargeModes && $savedCount > 1)
+                    <div class="mb-5 hidden existing-mode-block" id="fields-existing-only">
+                        <label class="block mb-2 text-sm font-semibold text-gray-300">اختر المنصة المحفوظة <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="group-saved-platform">
+                            @foreach($savedPlatforms as $saved)
+                                @php
+                                    $platformLower = strtolower($saved->platform);
+                                    $imgFile = match ($platformLower) {
+                                        '1xbet' => '1xbet.jfif',
+                                        'melbet' => 'melbet.jfif',
+                                        'linebet' => 'linebet.png',
+                                        'paripulse' => 'paripulse.png',
+                                        default => '',
+                                    };
+                                    $checked = strtolower(old('saved_platform', $savedPlatforms->first()->platform)) === $platformLower;
+                                @endphp
+                                <div class="platform-card">
+                                    <input type="radio" name="saved_platform" id="saved-platform-{{ $platformLower }}" value="{{ $saved->platform }}"
+                                           class="hidden saved-platform-radio"
+                                           data-account-id="{{ $saved->account_id }}"
+                                           data-full-name="{{ $saved->full_name }}"
+                                           data-platform-label="{{ strtoupper($saved->platform) }}"
+                                           {{ $checked ? 'checked' : '' }}>
+                                    <label for="saved-platform-{{ $platformLower }}"
+                                           class="flex flex-col items-center justify-center gap-1.5 h-24 rounded-xl border-2 border-gray-700 bg-gray-800 cursor-pointer text-xs font-bold uppercase transition hover:border-blue-500 p-2">
+                                        @if($imgFile)
+                                            <div class="w-10 h-7 rounded bg-gray-900 flex items-center justify-center p-0.5 overflow-hidden">
+                                                <img src="{{ asset($imgFile) }}" alt="{{ $saved->platform }}" class="max-h-full max-w-full object-contain">
+                                            </div>
+                                        @endif
+                                        <span>{{ strtoupper($saved->platform) }}</span>
+                                        <span class="text-[10px] text-gray-400 font-normal normal-case">ID: {{ $saved->account_id }}</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div id="existing-account-summary" class="mt-4 rounded-2xl border border-green-500/30 bg-green-500/5 p-4 text-sm hidden">
+                            <p class="text-green-400 font-bold mb-2"><i class="fa-solid fa-circle-check"></i> سيتم إرسال هذا الحساب تلقائياً</p>
+                            <p class="text-white"><span class="text-gray-400">المنصة:</span> <span id="existing-summary-platform">—</span></p>
+                            <p class="text-white"><span class="text-gray-400">ID الحساب:</span> <span id="existing-summary-id" class="font-mono text-blue-300">—</span></p>
+                            <p class="text-white"><span class="text-gray-400">الاسم:</span> <span id="existing-summary-name">—</span></p>
+                        </div>
+                        <p class="hint text-xs mt-1.5 text-gray-400">اختر المنصة — ID والاسم يُؤخذان من قاعدة البيانات ولا تُرسل من حقول أخرى.</p>
+                    </div>
+                @endif
+
+                {{-- المنصة (منصة جديدة فقط) --}}
+                <div class="mb-5 fields-new-only-block" id="fields-new-platform">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">اختر المنصة <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="group-platform">
                         @foreach($platforms as $platform)
@@ -158,7 +237,7 @@
                             @endphp
                             <div class="platform-card">
                                 <input type="radio" name="platform" id="platform-{{ $platform }}" value="{{ $platform }}"
-                                       class="hidden"
+                                       class="hidden new-platform-radio"
                                        {{ strtolower(old('platform', '1xbet')) === $platformLower ? 'checked' : '' }}>
                                 <label for="platform-{{ $platform }}"
                                        class="flex flex-col items-center justify-center gap-1.5 h-20 rounded-xl border-2 border-gray-700 bg-gray-800 cursor-pointer text-xs font-bold uppercase transition hover:border-blue-500 p-2">
@@ -188,8 +267,8 @@
                     <p class="hint text-xs mt-1.5 text-gray-400">إجبارية.</p>
                 </div>
 
-                {{-- سكرين شوت اختياري --}}
-                <div class="mb-6" id="group-platform_screenshot">
+                {{-- سكرين شوت اختياري (منصة جديدة فقط) --}}
+                <div class="mb-6 fields-new-only-block" id="group-platform_screenshot">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">سكرين شوت (ID + البرومو كود) <span class="text-gray-400 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
                         <i class="fa-solid fa-image text-2xl text-gray-400"></i>
@@ -234,15 +313,111 @@
     const MAX_DIMENSION = 1600;
     const JPEG_QUALITY = 0.75;
 
+    const showRechargeModes = @json($showRechargeModes ?? false);
+    const savedPlatformCount = @json($savedCount ?? 0);
+    const rechargeModeInput = document.getElementById('recharge_mode');
+    let currentMode = rechargeModeInput ? rechargeModeInput.value : 'new';
+
     const fieldState = {
         montant: false,
         account_id: false,
         fullName: false,
         recharge_code: false,
         platform: true,
+        saved_platform: true,
         recharge_image: false,
         platform_screenshot: true,
     };
+
+    const newOnlyBlocks = () => document.querySelectorAll('.fields-new-only-block');
+    const existingOnlyBlock = document.getElementById('fields-existing-only');
+    const existingSingleBlock = document.getElementById('fields-existing-single');
+    const existingSummary = document.getElementById('existing-account-summary');
+    const accountIdInput = document.getElementById('account_id');
+    const fullNameInput = document.getElementById('fullName');
+
+    function setInputsEnabled(inputs, enabled) {
+        inputs.forEach((el) => {
+            el.disabled = !enabled;
+            if (!enabled && el.type === 'radio') {
+                el.checked = false;
+            }
+        });
+    }
+
+    function applyRechargeMode(mode) {
+        currentMode = mode;
+        if (rechargeModeInput) {
+            rechargeModeInput.value = mode;
+        }
+
+        document.querySelectorAll('.recharge-mode-btn').forEach((btn) => {
+            const active = btn.dataset.mode === mode;
+            btn.classList.toggle('border-blue-500', active);
+            btn.classList.toggle('bg-blue-500/10', active);
+            btn.classList.toggle('border-gray-700', !active);
+            btn.classList.toggle('bg-gray-800/50', !active);
+        });
+
+        const isExisting = mode === 'existing';
+        newOnlyBlocks().forEach((el) => el.classList.toggle('hidden', isExisting));
+        document.querySelectorAll('.existing-mode-block').forEach((el) => {
+            el.classList.toggle('hidden', !isExisting);
+        });
+
+        const newPlatformRadios = document.querySelectorAll('.new-platform-radio');
+        const savedPlatformRadios = document.querySelectorAll('.saved-platform-radio');
+        setInputsEnabled(newPlatformRadios, !isExisting);
+        setInputsEnabled(savedPlatformRadios, isExisting);
+
+        if (accountIdInput) {
+            accountIdInput.required = !isExisting;
+            accountIdInput.disabled = isExisting;
+        }
+        if (fullNameInput) {
+            fullNameInput.required = !isExisting;
+            fullNameInput.disabled = isExisting;
+        }
+
+        if (isExisting) {
+            fieldState.account_id = true;
+            fieldState.fullName = true;
+            fieldState.platform = true;
+            fieldState.platform_screenshot = true;
+            if (savedPlatformCount > 1) {
+                let checkedSaved = document.querySelector('.saved-platform-radio:checked');
+                if (!checkedSaved) {
+                    const firstSaved = document.querySelector('.saved-platform-radio');
+                    if (firstSaved) {
+                        firstSaved.checked = true;
+                        checkedSaved = firstSaved;
+                    }
+                }
+                fieldState.saved_platform = Boolean(checkedSaved);
+                updateSavedPlatformSummary();
+            } else {
+                fieldState.saved_platform = true;
+            }
+        } else {
+            if (savedPlatformRadios.length && !document.querySelector('.new-platform-radio:checked')) {
+                const firstNew = document.querySelector('.new-platform-radio');
+                if (firstNew) firstNew.checked = true;
+            }
+            fieldState.saved_platform = true;
+            validateAccountId();
+            validateFullName();
+            fieldState.platform = true;
+        }
+
+        updateSubmitState();
+    }
+
+    if (showRechargeModes) {
+        document.querySelectorAll('.recharge-mode-btn').forEach((btn) => {
+            btn.addEventListener('click', () => applyRechargeMode(btn.dataset.mode));
+        });
+        applyRechargeMode(currentMode);
+    }
 
     function setFieldStatus(groupId, ok, message) {
         const group = document.getElementById(groupId);
@@ -252,6 +427,18 @@
         if (ok === null) return;
         group.classList.add(ok ? 'field-ok' : 'field-error');
         if (hint && message) hint.textContent = message;
+    }
+
+    function requiredFieldKeys() {
+        if (currentMode === 'existing') {
+            const keys = ['montant', 'recharge_code', 'recharge_image'];
+            if (savedPlatformCount > 1) {
+                keys.push('saved_platform');
+            }
+            return keys;
+        }
+
+        return ['montant', 'account_id', 'fullName', 'recharge_code', 'platform', 'recharge_image', 'platform_screenshot'];
     }
 
     function updateSubmitState() {
@@ -264,7 +451,7 @@
             return;
         }
 
-        const allValid = Object.values(fieldState).every(Boolean);
+        const allValid = requiredFieldKeys().every((key) => fieldState[key]);
         submitBtn.disabled = !allValid;
         if(submitBtn.disabled) {
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -284,28 +471,22 @@
 
     const accountId = document.getElementById('account_id');
     function validateAccountId() {
-        accountId.value = accountId.value.replace(/[^0-9]/g, '').slice(0, 13);
-        const len = accountId.value.length;
-        const ok = len >= 7 && len <= 13;
+        const ok = accountId.value.trim().length > 0;
         fieldState.account_id = ok;
         if (len > 0) {
             setFieldStatus('group-account_id', ok, ok ? 'تمام.' : 'ID الحساب يجب أن يتكون من 7 إلى 13 رقم.');
         }
         updateSubmitState();
     }
-    // Blocks the keystroke/paste itself once 13 digits are already present,
-    // so non-digit characters can never "free up room" under maxlength.
-    accountId.addEventListener('beforeinput', (e) => {
-        const hasSelection = accountId.selectionStart !== accountId.selectionEnd;
-        const digitsOnly = accountId.value.replace(/[^0-9]/g, '');
-        if (!hasSelection && digitsOnly.length >= 13 && e.inputType && e.inputType.startsWith('insert')) {
-            e.preventDefault();
-        }
-    });
     accountId.addEventListener('input', validateAccountId);
 
     const fullName = document.getElementById('fullName');
     function validateFullName() {
+        if (currentMode === 'existing') {
+            fieldState.fullName = true;
+            updateSubmitState();
+            return;
+        }
         const val = fullName.value.trim();
         const ok = val.length >= 3;
         fieldState.fullName = ok;
@@ -337,6 +518,27 @@
         });
     });
 
+    function updateSavedPlatformSummary() {
+        if (!existingSummary) return;
+        const selected = document.querySelector('.saved-platform-radio:checked');
+        if (!selected) {
+            existingSummary.classList.add('hidden');
+            return;
+        }
+        document.getElementById('existing-summary-platform').textContent = selected.dataset.platformLabel || '—';
+        document.getElementById('existing-summary-id').textContent = selected.dataset.accountId || '—';
+        document.getElementById('existing-summary-name').textContent = selected.dataset.fullName || '—';
+        existingSummary.classList.remove('hidden');
+    }
+
+    document.querySelectorAll('.saved-platform-radio').forEach(radio => {
+        radio.addEventListener('change', () => {
+            fieldState.saved_platform = true;
+            updateSavedPlatformSummary();
+            updateSubmitState();
+        });
+    });
+
     function compressImageFile(file) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -345,7 +547,6 @@
             reader.onload = (e) => {
                 img.onload = () => {
                     let { width, height } = img;
-
                     if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
                         if (width > height) {
                             height = Math.round(height * (MAX_DIMENSION / width));
@@ -355,13 +556,11 @@
                             height = MAX_DIMENSION;
                         }
                     }
-
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-
                     canvas.toBlob((blob) => {
                         if (!blob) {
                             reject(new Error('فشل ضغط الصورة'));
@@ -389,11 +588,9 @@
         const label = zone.querySelector('[data-default-label]');
         const preview = zone.querySelector('.preview');
         const groupId = 'group-' + inputId;
-
         if (!required) {
             fieldState[inputId] = true;
         }
-
         input.addEventListener('change', async () => {
             const file = input.files[0];
             if (!file) {
@@ -404,9 +601,7 @@
                 updateSubmitState();
                 return;
             }
-
             const isImage = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
-
             if (!isImage) {
                 fieldState[inputId] = false;
                 setFieldStatus(groupId, false, 'الملف يجب أن يكون صورة JPG أو PNG أو WEBP.');
@@ -451,9 +646,20 @@
     wireUpload('recharge_image', true);
     wireUpload('platform_screenshot', false);
 
+    validateMontant();
     validateAccountId();
     validateFullName();
     validateRechargeCode();
+    if (currentMode !== 'existing') {
+        validateAccountId();
+        validateFullName();
+    } else {
+        fieldState.account_id = true;
+        fieldState.fullName = true;
+        fieldState.platform = true;
+        fieldState.platform_screenshot = true;
+        updateSubmitState();
+    }
 
     form.addEventListener('submit', (e) => {
         if (submitBtn.disabled) {

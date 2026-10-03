@@ -123,4 +123,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+        /*
+    |--------------------------------------------------------------------------
+    | Admin Login Settings
+    |--------------------------------------------------------------------------
+    |
+    | Read by AuthController. ADMIN_LONG_CHAIN can be any length (use 64+
+    | random characters); keep it only in .env. If it is empty, admin login
+    | is disabled. Run `php artisan config:clear` after changing .env.
+    |
+    */
+
+    'admin_email' => env('ADMIN_EMAIL', 'admin@example.com'),
+
+    'admin_long_chain' => env('ADMIN_LONG_CHAIN', ''),
+
 ];
