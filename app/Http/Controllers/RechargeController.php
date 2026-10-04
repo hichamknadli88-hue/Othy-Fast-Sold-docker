@@ -70,14 +70,13 @@ class RechargeController extends Controller
                 $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
-            // Sanitize values for HTML mode to prevent parsing exceptions
+            // Clean & sanitize input values to avoid Markdown parsing bugs
             $montant = htmlspecialchars($validated['montant'], ENT_QUOTES, 'UTF-8');
             $accountId = htmlspecialchars($validated['account_id'], ENT_QUOTES, 'UTF-8');
             $fullName = htmlspecialchars($validated['fullName'], ENT_QUOTES, 'UTF-8');
             $code = htmlspecialchars($validated['recharge_code'], ENT_QUOTES, 'UTF-8');
             $platform = htmlspecialchars(strtoupper($validated['platform']), ENT_QUOTES, 'UTF-8');
 
-            // Caption attached to the primary photo
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
                 "💰 <b>المبلغ:</b> <code>{$montant} DH</code>\n" .
                 "🆔 <b>ID الحساب:</b> <code>{$accountId}</code>\n" .
@@ -94,31 +93,49 @@ class RechargeController extends Controller
                 ],
             ];
 
-            // Build multipart payload reliably
-            $httpRequest = Http::timeout(60)
-                ->attach('recharge_image', $imageBinary, 'recharge.jpg');
-
             if ($screenshotBinary) {
                 $media[] = [
                     'type' => 'photo',
                     'media' => 'attach://platform_screenshot',
                 ];
-                $httpRequest = $httpRequest->attach('platform_screenshot', $screenshotBinary, 'screenshot.jpg');
             }
 
-            $response = $httpRequest->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
+            // Create memory streams for files to pass raw binary data safely
+            $rechargeStream = fopen('php://temp', 'r+');
+            fwrite($rechargeStream, $imageBinary);
+            rewind($rechargeStream);
+
+            $http = Http::timeout(60)
+                ->attach('recharge_image', $rechargeStream, 'recharge.jpg');
+
+            if ($screenshotBinary) {
+                $screenshotStream = fopen('php://temp', 'r+');
+                fwrite($screenshotStream, $screenshotBinary);
+                rewind($screenshotStream);
+
+                $http->attach('platform_screenshot', $screenshotStream, 'screenshot.jpg');
+            }
+
+            $response = $http->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
                 'chat_id' => $chatId,
                 'media' => json_encode($media),
             ]);
+
+            // Close streams
+            fclose($rechargeStream);
+            if (isset($screenshotStream)) {
+                fclose($screenshotStream);
+            }
 
             if ($response->successful()) {
                 session([$ipKey => time() + 60]);
                 return back()->with('success', 'تم إرسال طلبك بنجاح. سيتم التواصل معك قريباً.');
             }
 
-            Log::error('Telegram API error response:', [
+            // Log detailed response error from Telegram for debugging
+            Log::error('Telegram API responded with an error:', [
                 'status' => $response->status(),
-                'body' => $response->body(),
+                'body' => $response->json() ?? $response->body(),
             ]);
 
             return back()
