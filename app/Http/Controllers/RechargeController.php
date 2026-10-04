@@ -1,434 +1,744 @@
-<?php
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="{{ asset('1784465709672.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>تسجيل الدخول | OTHY FAST SOLD</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #020617; }
 
-namespace App\Http\Controllers;
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #6366f1, #3b82f6);
+            background-size: 200% 100%;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer { 0% { background-position: 0% 0; } 100% { background-position: -200% 0; } }
 
-use App\Models\Annonce;
-use App\Models\RechargeOrder;
-use App\Models\User;
-use App\Models\UserPlatformAccount;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
-use RuntimeException;
-use Throwable;
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp .5s ease both; }
 
-class RechargeController extends Controller
-{
-    private const PLATFORMS = ['1xbet', 'melbet', 'paripulse', 'linebet'];
+        .field-input {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 0.6rem;
+            padding: 0.5rem 1rem;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            transition: border-color .2s ease, box-shadow .2s ease;
+            outline: none;
+        }
+        .field-input.ltr { direction: ltr; text-align: left; }
+        .field-input.has-toggle { padding-right: 2.75rem; }
+        .field-input::placeholder { color: #64748b; }
+        .field-input:focus { border-color: rgba(59, 130, 246, 0.6); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .field-input.is-invalid { border-color: rgba(239, 68, 68, 0.6); }
+        .field-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
+        .field-input.is-valid { border-color: rgba(34, 197, 94, 0.55); }
+        .field-input.is-valid:focus { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15); }
 
-    private const ALLOWED_AMOUNTS = [5, 10, 20, 30, 50, 100, 200, 500, 1000];
+        .field-error {
+            display: flex; align-items: center; gap: 0.4rem;
+            color: #f87171; font-size: 0.78rem; font-weight: 700;
+            margin-top: 0.5rem;
+            max-height: 0; opacity: 0; overflow: hidden;
+            transition: max-height .2s ease, opacity .2s ease;
+        }
+        .field-error.show { max-height: 3rem; opacity: 1; }
 
-    // max = 4 MB file, 3000x3000 px (GD needs ~4 bytes per pixel in memory)
-    private const IMAGE_RULES = [
-        'image',
-        'mimes:jpeg,png,jpg,webp',
-        'max:4096',
-        'dimensions:max_width=3000,max_height=3000',
-    ];
+        .form-alert {
+            display: none; align-items: flex-start; gap: 0.6rem;
+            margin-bottom: 1.25rem; padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5; font-size: 0.8rem; font-weight: 700; line-height: 1.6;
+        }
+        .form-alert.show { display: flex; animation: fadeInUp .25s ease both; }
 
-    public function index()
-    {
-        $user = Auth::user();
-        $savedPlatforms = $user
-            ? $user->platformAccounts()->orderBy('platform')->get()
-            : collect();
+        .submit-btn {
+            width: 100%; height: 54px; border-radius: 0.6rem;
+            font-weight: 700; font-size: 0.95rem; color: #fff; background: #2563eb;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            transition: all .25s ease; border: none; cursor: pointer;
+        }
+        .submit-btn:hover:not(:disabled) { background: #3b82f6; transform: translateY(-1px); }
+        .submit-btn:disabled { background: rgba(51, 65, 85, 0.6); color: #64748b; cursor: not-allowed; }
 
-        return view('recharge', [
-            'platforms' => self::PLATFORMS,
-            'savedPlatforms' => $savedPlatforms,
-            'canRepeatRecharge' => $savedPlatforms->isNotEmpty(),
-        ]);
-    }
+        .spin { animation: spin 0.7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-    public function store(Request $request)
-    {
-        // The per-IP limit is now a real one: ->middleware('throttle:5,1') on the
-        // POST route (see routes). The old session-based check was bypassable by
-        // dropping the cookie, so it was removed.
+        .mode-toggle {
+            display: flex; background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 1.5rem;
+        }
+        .mode-btn {
+            flex: 1; padding: 0.6rem; border-radius: 0.5rem;
+            font-size: 0.85rem; font-weight: 800; color: #64748b;
+            background: transparent; border: none; cursor: pointer;
+            transition: all .2s ease;
+        }
+        .mode-btn.active { background: #2563eb; color: #fff; }
 
-        $user = $request->user();
+        .checkbox-row { display: flex; align-items: center; gap: 0.5rem; }
+        .checkbox-row input[type="checkbox"] {
+            width: 1.1rem; height: 1.1rem; accent-color: #3b82f6; cursor: pointer;
+        }
+        .checkbox-row label { font-size: 0.82rem; color: #94a3b8; cursor: pointer; }
+        .checkbox-row.age-row input[type="checkbox"] { accent-color: #f59e0b; }
+        .checkbox-row.age-row label { color: #cbd5e1; font-weight: 700; }
+        .marquee-wrap { overflow: hidden; white-space: nowrap; }
+        .marquee-track { display: inline-block; padding-inline-start: 100%; animation: marquee 18s linear infinite; }
+        @keyframes marquee { to { transform: translateX(100%); } }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen overflow-x-hidden flex flex-col">
 
-        $mode = 'new';
-        if ($user) {
-            $hasSaved = $user->platformAccounts()->exists();
-            $mode = $request->input('recharge_mode', $hasSaved ? 'existing' : 'new');
+    <div class="w-full bg-blue-600/10 py-2.5 border-b border-blue-500/20 text-xs font-bold text-center text-blue-400 marquee-wrap">
+        <span class="marquee-track">
+            سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
+        </span>
+    </div>
 
-            if ($mode === 'existing' && ! $hasSaved) {
-                return $this->backWithError('لا توجد منصات محفوظة. استخدم تعبئة منصة جديدة.', $request);
+    <nav class="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="text-lg font-black tracking-tight text-white">
+                OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
+                    لتعبئة الحساب
+                </a>
+                
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex items-center justify-center px-6 py-10">
+        <div class="w-full max-w-md">
+
+            <div class="text-center mb-6 fade-in-up">
+                <h1 id="pageTitle" class="text-3xl md:text-4xl font-black text-white tracking-tight">تسجيل الدخول</h1>
+                <p id="pageSubtitle" class="text-slate-400 text-sm mt-3">أدخل بريدك الإلكتروني وكلمة المرور</p>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-slate-700/50 fade-in-up">
+
+                <div class="mode-toggle">
+                    <button type="button" id="tabLogin" class="mode-btn active">تسجيل الدخول</button>
+                    <button type="button" id="tabRegister" class="mode-btn">إنشاء حساب</button>
+                </div>
+
+                <div id="formAlert" class="form-alert" role="alert" aria-live="assertive">
+                    <i class="fa-solid fa-circle-xmark mt-0.5"></i>
+                    <span id="formAlertText"></span>
+                </div>
+
+                <form id="loginForm" method="POST" action="{{ route('login') }}" novalidate>
+                    @csrf
+
+                    <div class="mb-5 text-right">
+                        <label for="loginEmail" class="block text-slate-300 text-sm font-bold mb-2">البريد الإلكتروني</label>
+                        <input type="email" name="email" id="loginEmail" class="field-input ltr"
+                               placeholder="example@mail.com" autocomplete="email" required>
+                        <p id="loginEmailError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-4 text-right">
+                        <label for="loginPassword" class="block text-slate-300 text-sm font-bold mb-2">كلمة المرور</label>
+                        <div class="relative">
+                            <input type="password" name="password" id="loginPassword" class="field-input ltr has-toggle"
+                                   placeholder="••••••••" autocomplete="current-password" required>
+                            <button type="button" data-toggle="loginPassword" tabindex="-1"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="loginPasswordError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                        <p id="loginCapsLockHint" class="hidden mt-2 text-[11px] font-bold text-amber-400">
+                            <i class="fa-solid fa-triangle-exclamation"></i> مفتاح Caps Lock مفعل
+                        </p>
+                    </div>
+
+                    <div class="mb-4 text-right hidden" id="loginPasswordConfirmWrap">
+                        <label for="loginPasswordConfirm" class="block text-slate-300 text-sm font-bold mb-2">
+                            تأكيد كلمة المرور (أول إنشاء لحساب المدير)
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password_confirmation" id="loginPasswordConfirm" class="field-input ltr has-toggle"
+                                   placeholder="أعد كتابة كلمة المرور" autocomplete="new-password">
+                            <button type="button" data-toggle="loginPasswordConfirm" tabindex="-1"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="loginPasswordConfirmError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="checkbox-row mb-4">
+                        <input type="checkbox" name="remember" id="rememberMe">
+                        <label for="rememberMe">تذكرني</label>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="checkbox-row age-row">
+                            <input type="checkbox" name="age_confirmation" id="loginAge18" required>
+                            <label for="loginAge18">أؤكد أن عمري 18 سنة فما فوق</label>
+                        </div>
+                        <p id="loginAge18Error" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <button type="submit" id="loginSubmitBtn" class="submit-btn" disabled>
+                        <i class="fa-solid fa-right-to-bracket"></i> دخول
+                    </button>
+                </form>
+
+                <form id="registerForm" method="POST" action="{{ route('register') }}" class="hidden" novalidate>
+                    @csrf
+
+                    <div class="mb-5 text-right">
+                        <label for="regName" class="block text-slate-300 text-sm font-bold mb-2">الاسم الكامل</label>
+                        <input type="text" name="name" id="regName" class="field-input"
+                               placeholder="الاسم الكامل" autocomplete="name" required>
+                        <p id="regNameError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-5 text-right">
+                        <label for="regEmail" class="block text-slate-300 text-sm font-bold mb-2">البريد الإلكتروني</label>
+                        <input type="email" name="email" id="regEmail" class="field-input ltr"
+                               placeholder="example@mail.com" autocomplete="email" required>
+                        <p id="regEmailError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-5 text-right">
+                        <label for="regPhone" class="block text-slate-300 text-sm font-bold mb-2">رقم الهاتف</label>
+                        <input type="tel" name="phone" id="regPhone" class="field-input ltr"
+                               placeholder="+212600000000" autocomplete="tel" required>
+                        <p id="regPhoneError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-5 text-right">
+                        <label for="regPassword" class="block text-slate-300 text-sm font-bold mb-2">كلمة المرور</label>
+                        <div class="relative">
+                            <input type="password" name="password" id="regPassword" class="field-input ltr has-toggle"
+                                   placeholder="8 أحرف على الأقل" autocomplete="new-password" required>
+                            <button type="button" data-toggle="regPassword" tabindex="-1"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="regPasswordError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                        <p id="regCapsLockHint" class="hidden mt-2 text-[11px] font-bold text-amber-400">
+                            <i class="fa-solid fa-triangle-exclamation"></i> مفتاح Caps Lock مفعل
+                        </p>
+                    </div>
+
+                    <div class="mb-5 text-right">
+                        <label for="regPasswordConfirm" class="block text-slate-300 text-sm font-bold mb-2">تأكيد كلمة المرور</label>
+                        <div class="relative">
+                            <input type="password" name="password_confirmation" id="regPasswordConfirm" class="field-input ltr has-toggle"
+                                   placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" required>
+                            <button type="button" data-toggle="regPasswordConfirm" tabindex="-1"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="regPasswordConfirmError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="checkbox-row age-row">
+                            <input type="checkbox" name="age_confirmation" id="regAge18" required>
+                            <label for="regAge18">أؤكد أن عمري 18 سنة فما فوق</label>
+                        </div>
+                        <p id="regAge18Error" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <button type="submit" id="registerSubmitBtn" class="submit-btn" disabled>
+                        <i class="fa-solid fa-user-plus"></i> إنشاء حساب
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        
+        const $ = (id) => document.getElementById(id);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\+?[0-9]{8,15}$/;
+        const NAME_MIN = 3;
+        const PASSWORD_MIN = 8;
+        const CHECK_ADMIN_URL = "{{ route('auth.check-admin') }}";
+
+        const tabLogin = $('tabLogin');
+        const tabRegister = $('tabRegister');
+        const loginForm = $('loginForm');
+        const registerForm = $('registerForm');
+        const pageTitle = $('pageTitle');
+        const pageSubtitle = $('pageSubtitle');
+        const alertBox = $('formAlert');
+        const alertText = $('formAlertText');
+
+        let mode = 'login';
+
+        function hideAlert() {
+            alertBox.classList.remove('show');
+            alertText.textContent = '';
+        }
+
+        function showAlert(message) {
+            alertText.textContent = message;
+            alertBox.classList.add('show');
+        }
+
+        function switchMode(next) {
+            if (mode === next) return;
+            mode = next;
+            hideAlert();
+
+            const isLogin = mode === 'login';
+            loginForm.classList.toggle('hidden', !isLogin);
+            registerForm.classList.toggle('hidden', isLogin);
+            tabLogin.classList.toggle('active', isLogin);
+            tabRegister.classList.toggle('active', !isLogin);
+            pageTitle.textContent = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب';
+            pageSubtitle.textContent = isLogin
+                ? 'أدخل بريدك الإلكتروني وكلمة المرور'
+                : 'أدخل بياناتك لإنشاء حساب جديد';
+        }
+
+        tabLogin.addEventListener('click', () => switchMode('login'));
+        tabRegister.addEventListener('click', () => switchMode('register'));
+
+        document.querySelectorAll('[data-toggle]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const input = $(btn.dataset.toggle);
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.firstElementChild.classList.toggle('fa-eye', !show);
+                btn.firstElementChild.classList.toggle('fa-eye-slash', show);
+            });
+        });
+
+        function setError(input, errorEl, message) {
+            if (input.dataset.serverError) return;
+            errorEl.querySelector('span').textContent = message;
+            errorEl.classList.toggle('show', !!message);
+            input.classList.toggle('is-invalid', !!message);
+            input.classList.toggle('is-valid', !message && input.value !== '');
+        }
+
+        function setCheckboxError(errorEl, message) {
+            errorEl.querySelector('span').textContent = message;
+            errorEl.classList.toggle('show', !!message);
+        }
+
+        function showServerError(input, errorEl, message) {
+            input.dataset.serverError = '1';
+            errorEl.querySelector('span').textContent = message;
+            errorEl.classList.add('show');
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+        }
+
+        function clearServerError(input, errorEl) {
+            if (!input.dataset.serverError) return;
+            delete input.dataset.serverError;
+            setError(input, errorEl, '');
+        }
+
+        function bindLiveClear(input, errorEl, validateFn) {
+            input.addEventListener('input', () => {
+                clearServerError(input, errorEl);
+                hideAlert();
+                validateFn();
+            });
+            input.addEventListener('blur', validateFn);
+        }
+
+        // ===== Login form =====
+        const loginEmail = $('loginEmail');
+        const loginPassword = $('loginPassword');
+        const loginPasswordConfirmWrap = $('loginPasswordConfirmWrap');
+        const loginPasswordConfirm = $('loginPasswordConfirm');
+        const loginAge18 = $('loginAge18');
+        const loginSubmitBtn = $('loginSubmitBtn');
+        const loginSubmitHtml = loginSubmitBtn.innerHTML;
+        const loginState = { email: false, password: false, passwordConfirm: true, age: false };
+        let loginSubmitting = false;
+        let confirmFieldVisible = false;
+        let checkAdminAbort = null;
+        let emailCheckTimer = null;
+
+        function updateLoginUi() {
+            loginSubmitBtn.disabled = loginSubmitting
+                || !(loginState.email && loginState.password && loginState.passwordConfirm && loginState.age);
+        }
+
+        function validateLoginEmail() {
+            const v = loginEmail.value.trim();
+            loginState.email = emailRegex.test(v);
+            let msg = '';
+            if (v === '') msg = 'حقل البريد الإلكتروني مطلوب';
+            else if (!loginState.email) msg = 'صيغة البريد الإلكتروني غير صحيحة';
+            setError(loginEmail, $('loginEmailError'), msg);
+            updateLoginUi();
+        }
+
+        function validateLoginPassword() {
+            const v = loginPassword.value;
+            loginState.password = v.length > 0;
+            setError(loginPassword, $('loginPasswordError'), v === '' ? 'حقل كلمة المرور مطلوب' : '');
+            if (confirmFieldVisible) validateLoginPasswordConfirm();
+            updateLoginUi();
+        }
+
+        function validateLoginPasswordConfirm() {
+            if (!confirmFieldVisible) {
+                loginState.passwordConfirm = true;
+                return;
             }
+            const v = loginPasswordConfirm.value;
+            loginState.passwordConfirm = v !== '' && v === loginPassword.value;
+            let msg = '';
+            if (v === '') msg = 'حقل تأكيد كلمة المرور مطلوب';
+            else if (v !== loginPassword.value) msg = 'كلمتا المرور غير متطابقتين';
+            setError(loginPasswordConfirm, $('loginPasswordConfirmError'), msg);
+            updateLoginUi();
         }
 
-        return $mode === 'existing'
-            ? $this->storeExistingPlatformRecharge($request, $user)
-            : $this->storeNewPlatformRecharge($request, $user);
-    }
-
-    private function storeExistingPlatformRecharge(Request $request, User $user)
-    {
-        $accounts = $user->platformAccounts()->get();
-        $savedPlatforms = $accounts->pluck('platform')->all();
-
-        $rules = [
-            'montant' => ['required', 'numeric', 'in:' . implode(',', self::ALLOWED_AMOUNTS)],
-            'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
-            'recharge_image' => array_merge(['required'], self::IMAGE_RULES),
-            'recharge_mode' => ['required', 'in:existing'],
-        ];
-
-        if (count($savedPlatforms) > 1) {
-            $rules['saved_platform'] = ['required', 'string', Rule::in($savedPlatforms)];
+        function validateLoginAge18() {
+            loginState.age = loginAge18.checked;
+            setCheckboxError($('loginAge18Error'), loginState.age ? '' : 'يجب تأكيد أن عمرك 18 سنة فما فوق للمتابعة');
+            updateLoginUi();
         }
+        loginAge18.addEventListener('change', () => { hideAlert(); validateLoginAge18(); });
 
-        $validated = $request->validate($rules, $this->messages());
-
-        $platform = count($savedPlatforms) === 1
-            ? $savedPlatforms[0]
-            : $validated['saved_platform'];
-
-        $platformKey = strtolower($platform);
-        $account = $accounts->first(fn ($row) => strtolower($row->platform) === $platformKey);
-
-        if (! $account) {
-            return $this->backWithError('المنصة المختارة غير موجودة في حسابك.', $request);
-        }
-
-        $payload = [
-            'montant' => (int) $validated['montant'],
-            'account_id' => $account->account_id,
-            'fullName' => $account->full_name,
-            'recharge_code' => $validated['recharge_code'],
-            'platform' => strtolower($account->platform),
-        ];
-
-        $message = $this->buildMessage('طلب شحن (حساب موجود)', $payload, $user);
-
-        return $this->finalizeRecharge(
-            $request,
-            $payload,
-            $message,
-            $user,
-            true,
-            $request->file('recharge_image'),
-            null
-        );
-    }
-
-    private function storeNewPlatformRecharge(Request $request, ?User $user)
-    {
-        $validated = $request->validate([
-            'montant' => ['required', 'numeric', 'min:1.01'],
-            'account_id' => ['required', 'string', 'max:255'],
-            'fullName' => ['required', 'string', 'min:3', 'max:12'], // تم تحديث الحد الأقصى إلى 12 حرف
-            'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
-            'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
-            'recharge_image' => array_merge(['required'], self::IMAGE_RULES),
-            'platform_screenshot' => array_merge(['nullable'], self::IMAGE_RULES),
-            'recharge_mode' => ['nullable', 'in:new,existing'],
-        ], $this->messages());
-
-        $payload = [
-            'montant' => (int) $validated['montant'],
-            'account_id' => $validated['account_id'],
-            'fullName' => $validated['fullName'],
-            'recharge_code' => $validated['recharge_code'],
-            'platform' => strtolower($validated['platform']),
-        ];
-
-        $message = $this->buildMessage(
-            'طلب شحن جديد',
-            $payload,
-            $user,
-            $user ? '📌 <b>منصة جديدة / تعبئة كاملة</b>' : null
-        );
-
-        return $this->finalizeRecharge(
-            $request,
-            $payload,
-            $message,
-            $user,
-            false,
-            $request->file('recharge_image'),
-            $request->file('platform_screenshot')
-        );
-    }
-
-    private function finalizeRecharge(
-        Request $request,
-        array $payload,
-        string $message,
-        ?User $user,
-        bool $isRepeat,
-        UploadedFile $rechargeImage,
-        ?UploadedFile $screenshot = null,
-    ) {
-        $token = config('services.telegram.bot_token');
-        $chatId = $user
-            ? config('services.telegram.recharge_chat_id')
-            : config('services.telegram.chat_id');
-
-        if (! $token || ! $chatId) {
-            Log::error('Telegram credentials are missing from config/services.php or .env.');
-
-            return $this->backWithError('خطأ في إعدادات الخادم. المرجو التواصل مع الدعم.', $request);
-        }
-
-        $codeHash = $this->hashRechargeCode($payload['recharge_code']);
-
-        // Fast path: this code was already submitted.
-        if (RechargeOrder::where('code_hash', $codeHash)->exists()) {
-            return $this->duplicateCodeResponse($request);
-        }
-
-        // 1) Process images first: a bad image must not create an order.
-        try {
-            $imageBinary = $this->compressImage($rechargeImage);
-            $screenshotBinary = $screenshot ? $this->compressImage($screenshot) : null;
-        } catch (Throwable $e) {
-            Log::warning('Recharge image processing failed: ' . $e->getMessage());
-
-            return $this->backWithError('تعذر معالجة الصورة. تأكد أنها صورة صالحة وحاول مرة أخرى.', $request);
-        }
-
-        // 2) Reserve the order BEFORE calling Telegram. The unique index on
-        //    code_hash makes a double-click or a replayed code fail here.
-        try {
-            $order = new RechargeOrder([
-                'user_id' => $user?->id,
-                'montant' => $payload['montant'],
-                'account_id' => $payload['account_id'],
-                'platform' => $payload['platform'],
-                'full_name' => $payload['fullName'],
-                'is_repeat' => $isRepeat,
-            ]);
-            $order->forceFill(['code_hash' => $codeHash, 'status' => 'pending'])->save();
-        } catch (QueryException $e) {
-            if (($e->errorInfo[1] ?? null) === 1062) { // MySQL duplicate entry
-                return $this->duplicateCodeResponse($request);
-            }
-
-            Log::error('Recharge DB error while creating order: ' . $e->getMessage());
-
-            return $this->backWithError('حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.', $request);
-        }
-
-        // 3) Send to Telegram.
-        if (! $this->sendToTelegram($token, $chatId, $message, $imageBinary, $screenshotBinary)) {
-            // Free the code so the user can retry with the same one.
-            $order->delete();
-
-            return $this->backWithError(
-                'حدث خطأ أثناء إرسال الطلب. حاول مرة أخرى أو تواصل معنا عبر واتساب.',
-                $request
-            );
-        }
-
-        // 4) Mark as sent and remember the platform account (failures here are
-        //    logged but never shown as an error: the order did reach Telegram).
-        try {
-            $order->forceFill(['status' => 'sent', 'telegram_sent_at' => now()])->save();
-
-            if ($user && ! $isRepeat) {
-                UserPlatformAccount::updateOrCreate(
-                    ['user_id' => $user->id, 'platform' => $payload['platform']],
-                    ['account_id' => $payload['account_id'], 'full_name' => $payload['fullName']]
-                );
-            }
-        } catch (Throwable $e) {
-            Log::error('Recharge post-send DB error: ' . $e->getMessage());
-        }
-
-        return back()->with('success', 'تم إرسال طلبك بنجاح. سيتم التواصل معك قريباً.');
-    }
-
-    /**
-     * Sends one photo (sendPhoto) or two (sendMediaGroup, which requires 2-10 items).
-     * Never lets the bot token reach the logs.
-     */
-    private function sendToTelegram(
-        string $token,
-        string $chatId,
-        string $caption,
-        string $imageBinary,
-        ?string $screenshotBinary = null,
-    ): bool {
-        try {
-            $http = Http::asMultipart()->timeout(30);
-
-            if ($screenshotBinary) {
-                $media = [
-                    [
-                        'type' => 'photo',
-                        'media' => 'attach://recharge_image',
-                        'caption' => $caption,
-                        'parse_mode' => 'HTML',
-                    ],
-                    ['type' => 'photo', 'media' => 'attach://platform_screenshot'],
-                ];
-
-                $response = $http
-                    ->attach('recharge_image', $imageBinary, 'recharge.jpg')
-                    ->attach('platform_screenshot', $screenshotBinary, 'screenshot.jpg')
-                    ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
-                        'chat_id' => $chatId,
-                        'media' => json_encode($media),
-                    ]);
+        function setConfirmFieldVisibility(show) {
+            if (confirmFieldVisible === show) return;
+            confirmFieldVisible = show;
+            loginPasswordConfirmWrap.classList.toggle('hidden', !show);
+            if (!show) {
+                loginPasswordConfirm.value = '';
+                loginState.passwordConfirm = true;
+                setError(loginPasswordConfirm, $('loginPasswordConfirmError'), '');
             } else {
-                $response = $http
-                    ->attach('photo', $imageBinary, 'recharge.jpg')
-                    ->post("https://api.telegram.org/bot{$token}/sendPhoto", [
-                        'chat_id' => $chatId,
-                        'caption' => $caption,
-                        'parse_mode' => 'HTML',
-                    ]);
+                validateLoginPasswordConfirm();
             }
-
-            if ($response->successful()) {
-                return true;
-            }
-
-            Log::error('Telegram API responded with an error.', [
-                'status' => $response->status(),
-                'body' => $this->redact($response->body(), $token),
-            ]);
-        } catch (Throwable $e) {
-            // Do NOT pass $e in the log context: its message contains the full
-            // request URL, and therefore the bot token.
-            Log::error('Telegram request failed: ' . $this->redact($e->getMessage(), $token));
+            updateLoginUi();
         }
 
-        return false;
-    }
-
-    private function compressImage(UploadedFile $file): string
-    {
-        $path = $file->getRealPath();
-        $info = $path ? @getimagesize($path) : false;
-
-        if ($info === false) {
-            throw new RuntimeException('Not a valid image.');
+        async function checkAdminEmail(email) {
+            if (checkAdminAbort) checkAdminAbort.abort();
+            checkAdminAbort = new AbortController();
+            try {
+                const res = await fetch(`${CHECK_ADMIN_URL}?email=${encodeURIComponent(email)}`, {
+                    headers: { 'Accept': 'application/json' },
+                    signal: checkAdminAbort.signal,
+                });
+                if (!res.ok) { setConfirmFieldVisibility(false); return; }
+                const data = await res.json();
+                setConfirmFieldVisibility(!!data.requiresConfirmation);
+            } catch (_) {
+            }
         }
 
-        [$width, $height, $type] = $info;
+        bindLiveClear(loginEmail, $('loginEmailError'), validateLoginEmail);
+        bindLiveClear(loginPassword, $('loginPasswordError'), validateLoginPassword);
+        bindLiveClear(loginPasswordConfirm, $('loginPasswordConfirmError'), validateLoginPasswordConfirm);
 
-        $src = match ($type) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
-            IMAGETYPE_PNG => @imagecreatefrompng($path),
-            IMAGETYPE_WEBP => @imagecreatefromwebp($path),
-            default => false,
+        loginEmail.addEventListener('input', () => {
+            clearTimeout(emailCheckTimer);
+            const v = loginEmail.value.trim();
+            if (!emailRegex.test(v)) { setConfirmFieldVisibility(false); return; }
+            emailCheckTimer = setTimeout(() => checkAdminEmail(v), 350);
+        });
+
+        function checkCapsLock(input, hintEl, e) {
+            const on = typeof e.getModifierState === 'function' && e.getModifierState('CapsLock');
+            hintEl.classList.toggle('hidden', !on);
+        }
+        loginPassword.addEventListener('keydown', (e) => checkCapsLock(loginPassword, $('loginCapsLockHint'), e));
+        loginPassword.addEventListener('keyup', (e) => checkCapsLock(loginPassword, $('loginCapsLockHint'), e));
+        loginPassword.addEventListener('blur', () => $('loginCapsLockHint').classList.add('hidden'));
+
+        function setLoginSubmitting(on) {
+            loginSubmitting = on;
+            if (on) {
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i>';
+            } else {
+                loginSubmitBtn.innerHTML = loginSubmitHtml;
+                updateLoginUi();
+            }
+        }
+
+        // ===== Register form =====
+        const regName = $('regName');
+        const regEmail = $('regEmail');
+        const regPhone = $('regPhone');
+        const regPassword = $('regPassword');
+        const regPasswordConfirm = $('regPasswordConfirm');
+        const regAge18 = $('regAge18');
+        const registerSubmitBtn = $('registerSubmitBtn');
+        const registerSubmitHtml = registerSubmitBtn.innerHTML;
+        const regState = { name: false, email: false, phone: false, password: false, confirm: false, age: false };
+        let registerSubmitting = false;
+
+        function updateRegisterUi() {
+            registerSubmitBtn.disabled = registerSubmitting
+                || !(regState.name && regState.email && regState.phone && regState.password && regState.confirm && regState.age);
+        }
+
+        function validateRegName() {
+            const v = regName.value.trim();
+            regState.name = v.length >= NAME_MIN;
+            let msg = '';
+            if (v === '') msg = 'حقل الاسم مطلوب';
+            else if (!regState.name) msg = `الاسم يجب ألا يقل عن ${NAME_MIN} أحرف`;
+            setError(regName, $('regNameError'), msg);
+            updateRegisterUi();
+        }
+
+        function validateRegEmail() {
+            const v = regEmail.value.trim();
+            regState.email = emailRegex.test(v);
+            let msg = '';
+            if (v === '') msg = 'حقل البريد الإلكتروني مطلوب';
+            else if (!regState.email) msg = 'صيغة البريد الإلكتروني غير صحيحة';
+            setError(regEmail, $('regEmailError'), msg);
+            updateRegisterUi();
+        }
+
+        function validateRegPhone() {
+            const v = regPhone.value.trim();
+            regState.phone = phoneRegex.test(v);
+            let msg = '';
+            if (v === '') msg = 'حقل رقم الهاتف مطلوب';
+            else if (!regState.phone) msg = 'رقم الهاتف غير صحيح (8-15 رقم)';
+            setError(regPhone, $('regPhoneError'), msg);
+            updateRegisterUi();
+        }
+
+        function validateRegPassword() {
+            const len = regPassword.value.length;
+            regState.password = len >= PASSWORD_MIN;
+            let msg = '';
+            if (len === 0) msg = 'حقل كلمة المرور مطلوب';
+            else if (!regState.password) msg = `يجب ألا تقل عن ${PASSWORD_MIN} أحرف (${len}/${PASSWORD_MIN})`;
+            setError(regPassword, $('regPasswordError'), msg);
+            if (regPasswordConfirm.value !== '') validateRegPasswordConfirm();
+            updateRegisterUi();
+        }
+
+        function validateRegPasswordConfirm() {
+            const v = regPasswordConfirm.value;
+            regState.confirm = v !== '' && v === regPassword.value;
+            let msg = '';
+            if (v === '') msg = 'حقل تأكيد كلمة المرور مطلوب';
+            else if (v !== regPassword.value) msg = 'كلمتا المرور غير متطابقتين';
+            setError(regPasswordConfirm, $('regPasswordConfirmError'), msg);
+            updateRegisterUi();
+        }
+
+        function validateRegAge18() {
+            regState.age = regAge18.checked;
+            setCheckboxError($('regAge18Error'), regState.age ? '' : 'يجب تأكيد أن عمرك 18 سنة فما فوق للمتابعة');
+            updateRegisterUi();
+        }
+        regAge18.addEventListener('change', () => { hideAlert(); validateRegAge18(); });
+
+        bindLiveClear(regName, $('regNameError'), validateRegName);
+        bindLiveClear(regEmail, $('regEmailError'), validateRegEmail);
+        bindLiveClear(regPhone, $('regPhoneError'), validateRegPhone);
+        bindLiveClear(regPassword, $('regPasswordError'), validateRegPassword);
+        bindLiveClear(regPasswordConfirm, $('regPasswordConfirmError'), validateRegPasswordConfirm);
+
+        regPassword.addEventListener('keydown', (e) => checkCapsLock(regPassword, $('regCapsLockHint'), e));
+        regPassword.addEventListener('keyup', (e) => checkCapsLock(regPassword, $('regCapsLockHint'), e));
+        regPassword.addEventListener('blur', () => $('regCapsLockHint').classList.add('hidden'));
+
+        function setRegisterSubmitting(on) {
+            registerSubmitting = on;
+            if (on) {
+                registerSubmitBtn.disabled = true;
+                registerSubmitBtn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i>';
+            } else {
+                registerSubmitBtn.innerHTML = registerSubmitHtml;
+                updateRegisterUi();
+            }
+        }
+
+        // ===== Shared submit handling =====
+        const FIELD_MAP = {
+            loginForm: {
+                email: { input: loginEmail, error: $('loginEmailError') },
+                password: { input: loginPassword, error: $('loginPasswordError') },
+                password_confirmation: { input: loginPasswordConfirm, error: $('loginPasswordConfirmError') },
+            },
+            registerForm: {
+                name: { input: regName, error: $('regNameError') },
+                email: { input: regEmail, error: $('regEmailError') },
+                phone: { input: regPhone, error: $('regPhoneError') },
+                password: { input: regPassword, error: $('regPasswordError') },
+                password_confirmation: { input: regPasswordConfirm, error: $('regPasswordConfirmError') },
+            },
         };
 
-        if (! $src) {
-            throw new RuntimeException('Unsupported or corrupt image.');
+        function applyServerErrors(formKey, errors) {
+            const map = FIELD_MAP[formKey];
+            Object.values(map).forEach((f) => {
+                delete f.input.dataset.serverError;
+                setError(f.input, f.error, '');
+            });
+
+            let firstField = null;
+            let firstMessage = '';
+
+            Object.keys(map).forEach((key) => {
+                const messages = errors[key];
+                if (!messages) return;
+                const message = Array.isArray(messages) ? messages[0] : messages;
+                if (!firstMessage) firstMessage = message;
+                showServerError(map[key].input, map[key].error, message);
+                if (!firstField) firstField = map[key].input;
+            });
+
+            showAlert(firstMessage || 'تعذر إكمال الطلب، تحقق من البيانات المدخلة.');
+            if (firstField) firstField.focus();
         }
 
-        $scale = min(1, 1200 / max($width, $height));
-        $newWidth = max(1, (int) round($width * $scale));
-        $newHeight = max(1, (int) round($height * $scale));
+        function handleFailure(formKey, status, data, stopSubmitting) {
+            stopSubmitting();
 
-        $dst = imagecreatetruecolor($newWidth, $newHeight);
-
-        // JPEG has no alpha channel: paint white first so transparent PNGs
-        // don't turn black.
-        imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-        ob_start();
-        imagejpeg($dst, null, 75);
-        $binary = ob_get_clean();
-
-        unset($src, $dst);
-
-        if (! is_string($binary) || $binary === '') {
-            throw new RuntimeException('Image encoding failed.');
+            if (status === 422 && data && data.errors) {
+                applyServerErrors(formKey, data.errors);
+            } else if (status === 419) {
+                showAlert('انتهت صلاحية الجلسة. سيتم تحديث الصفحة...');
+                setTimeout(() => location.reload(), 1500);
+            } else if (status === 429) {
+                showAlert('محاولات كثيرة جداً. انتظر قليلاً ثم حاول مرة أخرى.');
+            } else if (status >= 500) {
+                showAlert('حدث خطأ في الخادم. حاول مرة أخرى بعد قليل.');
+            } else {
+                showAlert('تعذر إكمال الطلب. حاول مرة أخرى.');
+            }
         }
 
-        return $binary;
-    }
+        async function submitForm(form, formKey, setSubmitting) {
+            hideAlert();
+            setSubmitting(true);
 
-    /** HMAC so duplicates can be detected without storing the real code. */
-    private function hashRechargeCode(string $code): string
-    {
-        return hash_hmac('sha256', $code, (string) config('app.key'));
-    }
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                });
 
-    /** Escape for Telegram parse_mode=HTML (only & < > need escaping). */
-    private function h(?string $value): string
-    {
-        return htmlspecialchars((string) $value, ENT_NOQUOTES, 'UTF-8');
-    }
+                let data = null;
+                try { data = await response.json(); } catch (_) {}
 
-    private function buildMessage(string $title, array $payload, ?User $user, ?string $footer = null): string
-    {
-        $lines = ["🔔 <b>{$title}</b>", ''];
+                if (response.ok && data && data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
 
-        if ($user) {
-            $lines[] = '👤 المستخدم: <code>' . $this->h($user->name) . '</code> (' . $this->h($user->email) . ')';
+                handleFailure(formKey, response.status, data, () => setSubmitting(false));
+            } catch (_) {
+                setSubmitting(false);
+                showAlert('تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.');
+            }
         }
 
-        $lines[] = '💰 المبلغ: <code>' . (int) $payload['montant'] . ' DH</code>';
-        $lines[] = '🆔 ID الحساب: <code>' . $this->h($payload['account_id']) . '</code>';
-        $lines[] = '👤 الاسم الكامل: <code>' . $this->h($payload['fullName']) . '</code>';
-        $lines[] = '🎟 الكود: <code>' . $this->h($payload['recharge_code']) . '</code>';
-        $lines[] = '🎮 المنصة: <code>' . $this->h(strtoupper($payload['platform'])) . '</code>';
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            validateLoginEmail();
+            validateLoginPassword();
+            if (confirmFieldVisible) validateLoginPasswordConfirm();
+            validateLoginAge18();
+            if (!(loginState.email && loginState.password && loginState.passwordConfirm && loginState.age)) return;
+            submitForm(loginForm, 'loginForm', setLoginSubmitting);
+        });
 
-        if ($footer) {
-            $lines[] = '';
-            $lines[] = $footer;
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            validateRegName();
+            validateRegEmail();
+            validateRegPhone();
+            validateRegPassword();
+            validateRegPasswordConfirm();
+            validateRegAge18();
+            if (!(regState.name && regState.email && regState.phone && regState.password && regState.confirm && regState.age)) return;
+            submitForm(registerForm, 'registerForm', setRegisterSubmitting);
+        });
+
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) {
+                setLoginSubmitting(false);
+                setRegisterSubmitting(false);
+            }
+        });
+
+        updateLoginUi();
+        updateRegisterUi();
+        function revalidateAll() {
+            if (loginEmail.value) validateLoginEmail();
+            if (loginPassword.value) validateLoginPassword();
+            if (regEmail.value) validateRegEmail();
+            if (regPassword.value) validateRegPassword();
         }
-
-        return implode("\n", $lines);
-    }
-
-    /** Removes the bot token (and anything shaped like one) from a string. */
-    private function redact(string $text, string $token): string
-    {
-        $text = str_replace($token, '[redacted-token]', $text);
-
-        return preg_replace('/bot\d+:[A-Za-z0-9_-]+/', 'bot[redacted-token]', $text) ?? $text;
-    }
-
-    /** Never flash the recharge code (or files) back into the session. */
-    private function safeInput(Request $request): array
-    {
-        return $request->except(['recharge_code', 'recharge_image', 'platform_screenshot']);
-    }
-
-    private function backWithError(string $message, Request $request)
-    {
-        return back()->with('error', $message)->withInput($this->safeInput($request));
-    }
-
-    private function duplicateCodeResponse(Request $request)
-    {
-        return $this->backWithError('كود التعبئة هذا تم إرساله مسبقاً.', $request);
-    }
-
-    private function messages(): array
-    {
-        return [
-            'montant.required' => 'المبلغ إجباري.',
-            'montant.in' => 'يرجى اختيار مبلغ صالح من القائمة.',
-            'account_id.required' => 'ID الحساب إجباري.',
-            'account_id.regex' => 'ID الحساب يجب أن يتكون من 7 إلى 13 رقم.',
-            'fullName.required' => 'الاسم الكامل إجباري.',
-            'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
-            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 15 حرفاً.',
-            'recharge_code.required' => 'كود التعبئة إجباري.',
-            'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
-            'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
-            'platform.required' => 'يرجى اختيار المنصة.',
-            'saved_platform.required' => 'يرجى اختيار المنصة.',
-            'recharge_image.required' => 'صورة إثبات التعبئة إجبارية.',
-            'recharge_image.image' => 'الملف يجب أن يكون صورة صالحة.',
-            'recharge_image.max' => 'الحد الأقصى لحجم الصورة هو 4 ميجابايت.',
-            'recharge_image.dimensions' => 'أبعاد الصورة كبيرة جداً (الحد الأقصى 3000×3000).',
-            'platform_screenshot.image' => 'الملف يجب أن يكون صورة صالحة.',
-            'platform_screenshot.max' => 'الحد الأقصى لحجم الصورة هو 4 ميجابايت.',
-            'platform_screenshot.dimensions' => 'أبعاد الصورة كبيرة جداً (الحد الأقصى 3000×3000).',
-        ];
-    }
-}
+        ['change', 'animationstart'].forEach(evt => {
+            [loginEmail, loginPassword].forEach(el => el.addEventListener(evt, revalidateAll));
+        });
+        window.addEventListener('load', () => setTimeout(revalidateAll, 300));
+        window.addEventListener('pageshow', revalidateAll);
+    </script>
+</body>
+</html>
