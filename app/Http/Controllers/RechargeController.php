@@ -79,7 +79,7 @@ class RechargeController extends Controller
 
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
                 "💰 <b>المبلغ:</b> <code>{$montant} DH</code>\n" .
-                "🆔 <b>ID الحساب:</b> <code>{$accountId}</code>\n" .
+                "🆔 <b> الحساب:</b> <code>{$accountId}</code>\n" .
                 "👤 <b>الاسم الكامل:</b> <code>{$fullName}</code>\n" .
                 "🎟 <b>الكود:</b> <code>{$code}</code>\n" .
                 "🎮 <b>المنصة:</b> <code>{$platform}</code>";
