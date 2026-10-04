@@ -70,31 +70,43 @@ class RechargeController extends Controller
                 $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
-            $message = "🔔 *طلب شحن جديد*\n\n" .
-                "💰 المبلغ: `{$validated['montant']} DH`\n" .
-                "🆔  الحساب: `{$validated['account_id']}`\n" .
-                "👤 الاسم الكامل: `{$validated['fullName']}`\n" .
-                "🎟 الكود: `{$validated['recharge_code']}`\n" .
-                "🎮 المنصة: `" . strtoupper($validated['platform']) . "`";
+            // Sanitize values for HTML mode to prevent parsing exceptions
+            $montant = htmlspecialchars($validated['montant'], ENT_QUOTES, 'UTF-8');
+            $accountId = htmlspecialchars($validated['account_id'], ENT_QUOTES, 'UTF-8');
+            $fullName = htmlspecialchars($validated['fullName'], ENT_QUOTES, 'UTF-8');
+            $code = htmlspecialchars($validated['recharge_code'], ENT_QUOTES, 'UTF-8');
+            $platform = htmlspecialchars(strtoupper($validated['platform']), ENT_QUOTES, 'UTF-8');
+
+            // Caption attached to the primary photo
+            $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
+                "💰 <b>المبلغ:</b> <code>{$montant} DH</code>\n" .
+                "🆔 <b>ID الحساب:</b> <code>{$accountId}</code>\n" .
+                "👤 <b>الاسم الكامل:</b> <code>{$fullName}</code>\n" .
+                "🎟 <b>الكود:</b> <code>{$code}</code>\n" .
+                "🎮 <b>المنصة:</b> <code>{$platform}</code>";
 
             $media = [
                 [
                     'type' => 'photo',
                     'media' => 'attach://recharge_image',
                     'caption' => $message,
-                    'parse_mode' => 'Markdown',
+                    'parse_mode' => 'HTML',
                 ],
             ];
 
-            $http = Http::asMultipart()->timeout(30)
+            // Build multipart payload reliably
+            $httpRequest = Http::timeout(60)
                 ->attach('recharge_image', $imageBinary, 'recharge.jpg');
 
             if ($screenshotBinary) {
-                $media[] = ['type' => 'photo', 'media' => 'attach://platform_screenshot'];
-                $http = $http->attach('platform_screenshot', $screenshotBinary, 'screenshot.jpg');
+                $media[] = [
+                    'type' => 'photo',
+                    'media' => 'attach://platform_screenshot',
+                ];
+                $httpRequest = $httpRequest->attach('platform_screenshot', $screenshotBinary, 'screenshot.jpg');
             }
 
-            $response = $http->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
+            $response = $httpRequest->post("https://api.telegram.org/bot{$token}/sendMediaGroup", [
                 'chat_id' => $chatId,
                 'media' => json_encode($media),
             ]);
@@ -104,7 +116,7 @@ class RechargeController extends Controller
                 return back()->with('success', 'تم إرسال طلبك بنجاح. سيتم التواصل معك قريباً.');
             }
 
-            Log::error('Telegram API responded with an error.', [
+            Log::error('Telegram API error response:', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -121,10 +133,6 @@ class RechargeController extends Controller
         }
     }
 
-    /**
-     * تضغط الصورة وتعيد المحتوى الثنائي (binary) جاهزاً للإرسال مباشرة لتيليغرام
-     * دون الحاجة لحفظها في storage (لا حاجة لقاعدة بيانات أو تخزين دائم)
-     */
     private function compressImage($file): string
     {
         $tmpPath = $file->getRealPath();
