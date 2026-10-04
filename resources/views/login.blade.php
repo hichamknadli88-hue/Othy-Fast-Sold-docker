@@ -104,6 +104,8 @@
             width: 1.1rem; height: 1.1rem; accent-color: #3b82f6; cursor: pointer;
         }
         .checkbox-row label { font-size: 0.82rem; color: #94a3b8; cursor: pointer; }
+        .checkbox-row.age-row input[type="checkbox"] { accent-color: #f59e0b; }
+        .checkbox-row.age-row label { color: #cbd5e1; font-weight: 700; }
         .marquee-wrap { overflow: hidden; white-space: nowrap; }
         .marquee-track { display: inline-block; padding-inline-start: 100%; animation: marquee 18s linear infinite; }
         @keyframes marquee { to { transform: translateX(100%); } }
@@ -199,9 +201,19 @@
                         </p>
                     </div>
 
-                    <div class="checkbox-row mb-6">
+                    <div class="checkbox-row mb-4">
                         <input type="checkbox" name="remember" id="rememberMe">
                         <label for="rememberMe">تذكرني</label>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="checkbox-row age-row">
+                            <input type="checkbox" name="age_confirmation" id="loginAge18" required>
+                            <label for="loginAge18">أؤكد أن عمري 18 سنة فما فوق</label>
+                        </div>
+                        <p id="loginAge18Error" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
                     </div>
 
                     <button type="submit" id="loginSubmitBtn" class="submit-btn" disabled>
@@ -257,7 +269,7 @@
                         </p>
                     </div>
 
-                    <div class="mb-6 text-right">
+                    <div class="mb-5 text-right">
                         <label for="regPasswordConfirm" class="block text-slate-300 text-sm font-bold mb-2">تأكيد كلمة المرور</label>
                         <div class="relative">
                             <input type="password" name="password_confirmation" id="regPasswordConfirm" class="field-input ltr has-toggle"
@@ -268,6 +280,16 @@
                             </button>
                         </div>
                         <p id="regPasswordConfirmError" class="field-error" role="alert" aria-live="polite">
+                            <i class="fa-solid fa-circle-exclamation"></i><span></span>
+                        </p>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="checkbox-row age-row">
+                            <input type="checkbox" name="age_confirmation" id="regAge18" required>
+                            <label for="regAge18">أؤكد أن عمري 18 سنة فما فوق</label>
+                        </div>
+                        <p id="regAge18Error" class="field-error" role="alert" aria-live="polite">
                             <i class="fa-solid fa-circle-exclamation"></i><span></span>
                         </p>
                     </div>
@@ -348,6 +370,11 @@
             input.classList.toggle('is-valid', !message && input.value !== '');
         }
 
+        function setCheckboxError(errorEl, message) {
+            errorEl.querySelector('span').textContent = message;
+            errorEl.classList.toggle('show', !!message);
+        }
+
         function showServerError(input, errorEl, message) {
             input.dataset.serverError = '1';
             errorEl.querySelector('span').textContent = message;
@@ -376,9 +403,10 @@
         const loginPassword = $('loginPassword');
         const loginPasswordConfirmWrap = $('loginPasswordConfirmWrap');
         const loginPasswordConfirm = $('loginPasswordConfirm');
+        const loginAge18 = $('loginAge18');
         const loginSubmitBtn = $('loginSubmitBtn');
         const loginSubmitHtml = loginSubmitBtn.innerHTML;
-        const loginState = { email: false, password: false, passwordConfirm: true };
+        const loginState = { email: false, password: false, passwordConfirm: true, age: false };
         let loginSubmitting = false;
         let confirmFieldVisible = false;
         let checkAdminAbort = null;
@@ -386,7 +414,7 @@
 
         function updateLoginUi() {
             loginSubmitBtn.disabled = loginSubmitting
-                || !(loginState.email && loginState.password && loginState.passwordConfirm);
+                || !(loginState.email && loginState.password && loginState.passwordConfirm && loginState.age);
         }
 
         function validateLoginEmail() {
@@ -420,6 +448,13 @@
             setError(loginPasswordConfirm, $('loginPasswordConfirmError'), msg);
             updateLoginUi();
         }
+
+        function validateLoginAge18() {
+            loginState.age = loginAge18.checked;
+            setCheckboxError($('loginAge18Error'), loginState.age ? '' : 'يجب تأكيد أن عمرك 18 سنة فما فوق للمتابعة');
+            updateLoginUi();
+        }
+        loginAge18.addEventListener('change', () => { hideAlert(); validateLoginAge18(); });
 
         function setConfirmFieldVisibility(show) {
             if (confirmFieldVisible === show) return;
@@ -486,14 +521,15 @@
         const regPhone = $('regPhone');
         const regPassword = $('regPassword');
         const regPasswordConfirm = $('regPasswordConfirm');
+        const regAge18 = $('regAge18');
         const registerSubmitBtn = $('registerSubmitBtn');
         const registerSubmitHtml = registerSubmitBtn.innerHTML;
-        const regState = { name: false, email: false, phone: false, password: false, confirm: false };
+        const regState = { name: false, email: false, phone: false, password: false, confirm: false, age: false };
         let registerSubmitting = false;
 
         function updateRegisterUi() {
             registerSubmitBtn.disabled = registerSubmitting
-                || !(regState.name && regState.email && regState.phone && regState.password && regState.confirm);
+                || !(regState.name && regState.email && regState.phone && regState.password && regState.confirm && regState.age);
         }
 
         function validateRegName() {
@@ -546,6 +582,13 @@
             setError(regPasswordConfirm, $('regPasswordConfirmError'), msg);
             updateRegisterUi();
         }
+
+        function validateRegAge18() {
+            regState.age = regAge18.checked;
+            setCheckboxError($('regAge18Error'), regState.age ? '' : 'يجب تأكيد أن عمرك 18 سنة فما فوق للمتابعة');
+            updateRegisterUi();
+        }
+        regAge18.addEventListener('change', () => { hideAlert(); validateRegAge18(); });
 
         bindLiveClear(regName, $('regNameError'), validateRegName);
         bindLiveClear(regEmail, $('regEmailError'), validateRegEmail);
@@ -659,7 +702,8 @@
             validateLoginEmail();
             validateLoginPassword();
             if (confirmFieldVisible) validateLoginPasswordConfirm();
-            if (!(loginState.email && loginState.password && loginState.passwordConfirm)) return;
+            validateLoginAge18();
+            if (!(loginState.email && loginState.password && loginState.passwordConfirm && loginState.age)) return;
             submitForm(loginForm, 'loginForm', setLoginSubmitting);
         });
 
@@ -670,7 +714,8 @@
             validateRegPhone();
             validateRegPassword();
             validateRegPasswordConfirm();
-            if (!(regState.name && regState.email && regState.phone && regState.password && regState.confirm)) return;
+            validateRegAge18();
+            if (!(regState.name && regState.email && regState.phone && regState.password && regState.confirm && regState.age)) return;
             submitForm(registerForm, 'registerForm', setRegisterSubmitting);
         });
 
