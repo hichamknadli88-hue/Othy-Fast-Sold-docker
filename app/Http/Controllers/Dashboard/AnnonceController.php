@@ -11,13 +11,19 @@ use Illuminate\View\View;
 
 class AnnonceController extends Controller
 {
-    public function index(): View|RedirectResponse
+public function index(): View|RedirectResponse
     {
+        $annonces = Annonce::latest()->paginate(4)->fragment('gallery');
 
+        // e.g. the last item of the last page was just deleted
+        if ($annonces->isEmpty() && $annonces->currentPage() > 1) {
+            return redirect()->route('admin.dashboard', ['page' => $annonces->lastPage()]);
+        }
 
-        return view('admin.dashboard');
+        $current = Annonce::chosen();
+
+        return view('admin.dashboard', compact('annonces', 'current'));
     }
-
     // Upload from device AND set as annonce in one step
     public function store(Request $request): RedirectResponse
     {
