@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RechargeController extends Controller
 {
@@ -13,6 +14,18 @@ class RechargeController extends Controller
     public function index()
     {
         return view('recharge', ['platforms' => self::PLATFORMS]);
+    }
+
+    public function success()
+    {
+        if (!session('order')) {
+            return redirect()->route('recharge.create');
+        }
+
+        // keep the data in session so a page refresh does not lose it
+        session()->keep(['order']);
+
+        return view('recharge-success');
     }
 
     public function store(Request $request)
@@ -34,7 +47,7 @@ class RechargeController extends Controller
         $validated = $request->validate([
             'montant' => ['required', 'numeric', 'min:1.01'],
             'account_id' => ['required', 'string', 'max:255'],
-            'fullName' => ['required', 'string', 'min:3', 'max:12'],
+            'fullName' => ['required', 'string', 'min:3', 'max:15'],
             'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
             'platform' => ['required', 'string'],
             'recharge_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp'],
@@ -45,7 +58,7 @@ class RechargeController extends Controller
             'account_id.required' => 'ID الحساب إجباري.',
             'fullName.required' => 'الاسم الكامل إجباري.',
             'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
-            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 12 حرفاً.',
+            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 15 حرفاً.',
             'recharge_code.required' => 'كود التعبئة إجباري.',
             'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
@@ -70,14 +83,18 @@ class RechargeController extends Controller
                 $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
-            // Clean & sanitize input values to avoid Markdown parsing bugs
+            // Clean & sanitize input values
             $montant = htmlspecialchars($validated['montant'], ENT_QUOTES, 'UTF-8');
             $accountId = htmlspecialchars($validated['account_id'], ENT_QUOTES, 'UTF-8');
             $fullName = htmlspecialchars($validated['fullName'], ENT_QUOTES, 'UTF-8');
             $code = htmlspecialchars($validated['recharge_code'], ENT_QUOTES, 'UTF-8');
             $platform = htmlspecialchars(strtoupper($validated['platform']), ENT_QUOTES, 'UTF-8');
 
+            // Reference shown to the customer and sent to Telegram
+            $reference = 'WIN-' . strtoupper(Str::random(8));
+
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
+                "📌 <b>المرجع:</b> <code>{$reference}</code>\n" .
                 "💰 <b>المبلغ:</b> <code>{$montant} DH</code>\n" .
                 "🆔 <b> الحساب:</b> <code>{$accountId}</code>\n" .
                 "👤 <b>الاسم الكامل:</b> <code>{$fullName}</code>\n" .
@@ -100,7 +117,6 @@ class RechargeController extends Controller
                 ];
             }
 
-            // Create memory streams for files to pass raw binary data safely
             $rechargeStream = fopen('php://temp', 'r+');
             fwrite($rechargeStream, $imageBinary);
             rewind($rechargeStream);
@@ -121,7 +137,6 @@ class RechargeController extends Controller
                 'media' => json_encode($media),
             ]);
 
-            // Close streams
             fclose($rechargeStream);
             if (isset($screenshotStream)) {
                 fclose($screenshotStream);
@@ -129,10 +144,16 @@ class RechargeController extends Controller
 
             if ($response->successful()) {
                 session([$ipKey => time() + 60]);
-                return back()->with('success', 'تم إرسال طلبك بنجاح. سيتم التواصل معك قريباً.');
+
+                return redirect()
+                    ->route('recharge.success')
+                    ->with('order', [
+                        'reference' => $reference,
+                        'amount'    => $montant,
+                        'platform'  => $platform,
+                    ]);
             }
 
-            // Log detailed response error from Telegram for debugging
             Log::error('Telegram API responded with an error:', [
                 'status' => $response->status(),
                 'body' => $response->json() ?? $response->body(),
