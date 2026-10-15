@@ -52,6 +52,16 @@
             visibility: hidden;
         }
 
+        /* Floating WhatsApp Buttons Animation */
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        .whatsapp-float-btn {
+            animation: pulse-subtle 3s infinite ease-in-out;
+            box-shadow: 0 10px 25px -5px rgba(37, 211, 102, 0.4);
+        }
+
         /* Copy/redirect confirmation modal */
         #copyModalOverlay {
             display: none;
@@ -139,7 +149,7 @@
         }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen overflow-x-hidden">
+<body class="text-slate-200 min-h-screen overflow-x-hidden relative">
 
     @include('partials.annonce-popup')
 
@@ -149,106 +159,55 @@
         </span>
     </div>
 
-    <!-- Header / Navbar تم تحسينه للشاشات الصغيرة -->
+    <!-- Header / Navbar تم تبسيطه واستعادة شكله الأصلي النظيف -->
     <nav class="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-            <!-- الشعار -->
-            <div class="text-base sm:text-lg font-black tracking-tight text-white shrink-0">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="text-lg font-black tracking-tight text-white">
                 OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
             </div>
             
-            <!-- روابط التنقل (تظهر فقط في الشاشات المتوسطة والكبيرة) -->
             <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-bold">
                 <a href="#pricing" class="hover:text-blue-400 transition-colors">الأسعار</a>
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
             
-            <!-- الأزرار اليمنية -->
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <!-- أزرار الواتساب (أيقونة فقط في الهاتف، ونص كامل في الشاشات الكبيرة) -->
-                <a href="https://wa.me/212725415898" target="_blank" class="h-9 px-2.5 rounded-lg text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/30 text-emerald-400 transition-all flex items-center justify-center gap-1" title="واتساب 1">
-                    <i class="fab fa-whatsapp text-sm"></i>
-                    <span class="hidden md:inline">واتساب 1</span>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
+                    لتعبئة الحساب
                 </a>
-                <a href="https://wa.me/qr/DJTJUSLCYYWTO1" target="_blank" class="h-9 px-2.5 rounded-lg text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/30 text-emerald-400 transition-all flex items-center justify-center gap-1" title="واتساب 2">
-                    <i class="fab fa-whatsapp text-sm"></i>
-                    <span class="hidden md:inline">واتساب 2</span>
-                </a>
-
-                <a href="{{ route('recharge.form') }}" id="nav-cta" class="h-9 px-3 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white flex items-center justify-center">
-                    تعبئة
-                </a>
-
                 @auth
                     @admin
-                        <a href="{{ route('admin.dashboard') }}" class="h-9 px-3 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white flex items-center justify-center">
-                            اللوحة
+                        <a href="{{ route('admin.dashboard') }}" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white">
+                            لوحة التحكم
                         </a>
                     @endadmin
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <button type="submit" class="h-9 px-2.5 rounded-lg text-xs font-bold bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-slate-200 transition-all flex items-center justify-center">
-                            <i class="fa-solid fa-right-from-bracket"></i>
+                        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10 hover:text-slate-200 transition-all">
+                            <i class="fa-solid fa-right-from-bracket ml-1"></i> تسجيل الخروج
                         </button>
                     </form>
                 @elseguest
-                    <a href="{{ route('login') }}" class="h-9 px-3 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white flex items-center justify-center">
-                        دخول
+                    <a href="{{ route('login') }}" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white">
+                        تسجيل الدخول  
                     </a>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-8 flex flex-col items-center text-center">
-        <span class="inline-block mb-6 px-4 py-1.5 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-wide">
-            بوابتك الموثوقة للمعالجة الرقمية
-        </span>
+    <!-- أزرار الواتساب العائمة في أسفل اليسار (مثل زري التيلغرام والواتساب المشهورة) -->
+    <div class="fixed bottom-5 left-5 z-50 flex flex-col gap-3">
+        <!-- زر واتساب 2 -->
+        <a href="https://wa.me/qr/DJTJUSLCYYWTO1" target="_blank" class="whatsapp-float-btn w-12 h-12 md:w-14 md:h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center transition-all transform hover:scale-110 shadow-lg border-2 border-emerald-300/30 group relative" title="واتساب 2">
+            <i class="fab fa-whatsapp text-2xl md:text-3xl"></i>
+            <span class="absolute left-16 bg-slate-900/90 text-white text-xs font-bold py-1 px-2.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-slate-700 pointer-events-none">
+                واتساب 2
+            </span>
+        </a>
 
-        <h1 class="text-4xl md:text-6xl font-black mb-2 tracking-tighter leading-tight text-white">
-            OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
-        </h1>
-
-        <!-- Lottie animation -->
-        <div id="hero-lottie" class="w-44 h-44 md:w-64 md:h-44 mx-auto mb-2"></div>
-
-        <p class="text-slate-400 text-base md:text-xl mb-10 max-w-xl leading-relaxed">
-            وجهتك الأولى للمعالجة الرقمية الآمنة. سرعة فائقة في التنفيذ وتجربة مستخدم لا تضاهى.
-        </p>
-
-        <div id="hero-cta-group" class="flex flex-col items-center justify-center gap-4 w-full max-w-md mb-4">
-            <a href="{{ route('recharge.form') }}" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
-                لتعبئة الحساب
-            </a>
-        </div>
-
-        <div class="w-full max-w-md flex flex-col gap-3 mb-16">
-            <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full text-xs md:text-sm">
-                <i class="fab fa-telegram text-lg"></i>
-                القناة الرسمية للعروض
-            </a>
-            <a href="https://t.me/OthyFastSold" target="_blank" class="cta-btn bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 w-full text-xs md:text-sm">
-                <i class="fab fa-telegram text-lg"></i>
-                للتواصل و السحب
-            </a>
-            <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 w-full text-xs md:text-sm">
-                <i class="fab fa-telegram text-lg"></i>
-                قناة التوقعات
-            </a>
-        </div>
-
-        <div class="grid grid-cols-3 gap-4 md:gap-12 w-full max-w-2xl">
-            <div class="flex flex-col items-center gap-2">
-                <i class="fa-solid fa-bolt text-blue-400 text-xl md:text-2xl"></i>
-                <span class="text-xs md:text-sm text-slate-400 font-bold">سرعة فائقة</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-                <i class="fa-solid fa-shield-halved text-blue-400 text-xl md:text-2xl"></i>
-                <span class="text-xs md:text-sm text-slate-400 font-bold">أمان تام</span>
-            </div>
-            <div class="flex flex-col items-center gap-2">
-                <i class="fa-solid fa-circle-check text-blue-400 text-xl md:text-2xl"></i>
-                <span class="text-xs md:text-sm text-slate-400 font-bold">موثوقية عالية</span>
-            </div>
-        </div>
+        <!-- زر واتساب 1 -->
+        <a href="https://wa.me/212725415898" target="_blank" class="whatsapp-float-btn w-12 h-12 md:w-14 md:h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center transition-all transform hover:scale-110 shadow-lg border-2 border-emerald-300/30 group relative" title="واتساب 1">
+            <i class="fab fa-whatsapp text-2xl md:text-3xl"></i>
+            <span class="absolute left-16 bg-slate-900/90 text-white text-xs font-bold py-1 px-2.5 rounded-md opacity-0 group-hover:opacity-
