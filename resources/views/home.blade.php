@@ -9,8 +9,8 @@
     <title>OTHY FAST SOLD | بوابتك للخدمات الرقمية</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        html {
-            scroll-behavior: smooth;
+        html{
+            scroll-behavior: smooth
         }
         body { 
             font-family: 'Cairo', sans-serif; 
@@ -155,17 +155,16 @@
 
     <div class="w-full bg-blue-600/10 py-2.5 border-b border-blue-500/20 text-xs font-bold text-center text-blue-400 marquee-wrap">
         <span class="marquee-track">
-            سرعة، أمان، وموثوقية | تم إتمام أكثر من 1000 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
+            سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
         </span>
     </div>
 
-    <!-- Header / Navbar تم تبسيطه واستعادة شكله الأصلي النظيف -->
+    <!-- Header / Navbar بدون أزرار واتساب -->
     <nav class="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="text-lg font-black tracking-tight text-white">
                 OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
             </div>
-            
             <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-bold">
                 <a href="#pricing" class="hover:text-blue-400 transition-colors">الأسعار</a>
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
@@ -197,7 +196,7 @@
         </div>
     </nav>
 
-    <!-- أزرار الواتساب العائمة في أسفل اليسار (مثل زري التيلغرام والواتساب المشهورة) -->
+    <!-- أزرار الواتساب العائمة في أسفل اليسار (تظهر باستمرار أثناء التمرير) -->
     <div class="fixed bottom-5 left-5 z-50 flex flex-col gap-3">
         <!-- زر واتساب 2 -->
         <a href="https://wa.me/qr/DJTJUSLCYYWTO1" target="_blank" class="whatsapp-float-btn w-12 h-12 md:w-14 md:h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center transition-all transform hover:scale-110 shadow-lg border-2 border-emerald-300/30 group relative" title="واتساب 2">
@@ -210,4 +209,264 @@
         <!-- زر واتساب 1 -->
         <a href="https://wa.me/212725415898" target="_blank" class="whatsapp-float-btn w-12 h-12 md:w-14 md:h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center transition-all transform hover:scale-110 shadow-lg border-2 border-emerald-300/30 group relative" title="واتساب 1">
             <i class="fab fa-whatsapp text-2xl md:text-3xl"></i>
-            <span class="absolute left-16 bg-slate-900/90 text-white text-xs font-bold py-1 px-2.5 rounded-md opacity-0 group-hover:opacity-
+            <span class="absolute left-16 bg-slate-900/90 text-white text-xs font-bold py-1 px-2.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-slate-700 pointer-events-none">
+                واتساب 1
+            </span>
+        </a>
+    </div>
+
+    <main class="container mx-auto px-6 py-10 flex flex-col items-center text-center">
+        <span class="inline-block mb-6 px-4 py-1.5 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-bold tracking-wide">
+            بوابتك الموثوقة للمعالجة الرقمية
+        </span>
+
+        <h1 class="text-5xl md:text-6xl font-black mb-2 tracking-tighter leading-tight text-white">
+            OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
+        </h1>
+
+        <!-- Lottie animation (between title and subtitle) -->
+        <div id="hero-lottie" class="w-48 h-48 md:w-64 md:h-44 mx-auto mb-2"></div>
+
+        <p class="text-slate-400 text-lg md:text-xl mb-12 max-w-xl leading-relaxed">
+            وجهتك الأولى للمعالجة الرقمية الآمنة. سرعة فائقة في التنفيذ وتجربة مستخدم لا تضاهى.
+        </p>
+
+        <div id="hero-cta-group" class="flex flex-col items-center justify-center gap-4 w-full max-w-md mb-4">
+            <a href="{{ route('recharge.form') }}" id="hero-cta" class="cta-btn bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 w-full">
+                لتعبئة الحساب
+            </a>
+        </div>
+
+        <div class="w-full max-w-md flex flex-col gap-3 mb-16">
+            <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="cta-btn bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/20 w-full text-xs md:text-sm">
+                <i class="fab fa-telegram text-lg"></i>
+                القناة الرسمية للعروض
+            </a>
+            <a href="https://t.me/OthyFastSold" target="_blank" class="cta-btn bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 w-full text-xs md:text-sm">
+                <i class="fab fa-telegram text-lg"></i>
+                للتواصل و السحب
+            </a>
+            <a href="https://t.me/othy_fast_prono" target="_blank" class="cta-btn bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 w-full text-xs md:text-sm">
+                <i class="fab fa-telegram text-lg"></i>
+                قناة التوقعات
+            </a>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 md:gap-12 w-full max-w-2xl">
+            <div class="flex flex-col items-center gap-2">
+                <i class="fa-solid fa-bolt text-blue-400 text-2xl"></i>
+                <span class="text-xs md:text-sm text-slate-400 font-bold">سرعة فائقة</span>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-blue-400 text-2xl"></i>
+                <span class="text-xs md:text-sm text-slate-400 font-bold">أمان تام</span>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+                <i class="fa-solid fa-circle-check text-blue-400 text-2xl"></i>
+                <span class="text-xs md:text-sm text-slate-400 font-bold">موثوقية عالية</span>
+            </div>
+        </div>
+    </main>
+
+    <section id="pricing" class="max-w-4xl mx-auto px-6 mb-24">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-black mb-3 text-white">جدول الأسعار</h2>
+            <p class="text-slate-400 text-sm max-w-lg mx-auto">أسعار واضحة وثابتة، مع مزايا إضافية عند استخدام كود OTHY أو كود paripulse &amp; melbet.</p>
+        </div>
+        <div class="glass-card rounded-3xl p-6 border border-slate-700/50 overflow-x-auto">
+            <table class="w-full text-center min-w-[560px]">
+                <thead>
+                    <tr class="text-slate-400 border-b border-slate-700/50">
+                        <th class="py-4 font-bold">المبلغ</th>
+                        <th class="py-4 font-bold">عادي</th>
+                        <th class="py-4 font-bold text-blue-400">مع كود OTHY (1xbet & linebet)</th>
+                        <th class="py-4 font-bold text-indigo-400">مع كود paripulse &amp; melbet</th>
+                    </tr>
+                </thead>
+                <tbody id="price-table-body" class="text-slate-200"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="max-w-2xl mx-auto px-6 text-center mb-12">
+        <h2 class="text-3xl font-black mb-4 text-white">المنصات الشريكة</h2>
+        <p class="text-slate-400 text-base leading-relaxed">
+            هذه أكواد ترويجية خاصة بمنصاتنا الشريكة. اضغط على زر "سجل الآن" أسفل كل منصة لنسخ الكود تلقائياً
+            والانتقال إلى صفحة التسجيل الرسمية، حيث يمنحك الكود مزايا إضافية عند فتح حسابك.
+        </p>
+    </div>
+
+    <section id="platforms" class="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6"></section>
+
+    <p class="text-center text-slate-400 text-sm mt-8 mb-24 px-6">
+        ملاحظة: عند الضغط على زر "سجل الآن"، سيتم نسخ الكود تلقائياً لضمان حصولك على أفضل العروض عند التسجيل.
+    </p>
+
+    <footer id="contact" class="bg-slate-900/80 border-t border-slate-800 py-16 w-full">
+        <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 text-right">
+            <div>
+                <h4 class="text-blue-400 font-bold mb-4 border-b border-slate-800 pb-2">واتساب</h4>
+                <div class="space-y-3 text-slate-400 text-sm">
+                    <p class="flex items-center"><i class="fab fa-whatsapp text-green-500 ml-2 text-lg"></i> 0798706144</p>
+                    <p class="flex items-center"><i class="fab fa-whatsapp text-green-500 ml-2 text-lg"></i> 0725415898</p>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-blue-400 font-bold mb-4 border-b border-slate-800 pb-2">تيلغرام</h4>
+                <div class="space-y-3">
+                    <a href="https://t.me/Othy_fast_sold_07" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> القناة الرسمية للعروض</a>
+                    <a href="https://t.me/OthyFastSold" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> للتواصل و السحب</a>
+                    <a href="https://t.me/othy_fast_prono" target="_blank" class="block text-slate-400 text-sm hover:text-blue-400"><i class="fab fa-telegram text-sky-500 ml-2 text-lg"></i> قناة التوقعات</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-blue-400 font-bold mb-4 border-b border-slate-800 pb-2">تابعنا</h4>
+                <div class="flex gap-6 text-2xl text-slate-400">
+                    <a href="https://www.facebook.com/share/1982M7TqU9/" class="hover:text-blue-600 transition"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.instagram.com/koo.ra07?igsh=YnlhdGNiOThyNjVl" class="hover:text-pink-600 transition"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-slate-500 text-xs mt-10 border-t border-slate-800/80 pt-6">
+            &copy; 2026 OTHY FAST SOLD. جميع الحقوق محفوظة.
+        </div>
+    </footer>
+
+    <!-- Copy/redirect confirmation modal -->
+    <div id="copyModalOverlay">
+        <div class="copy-modal-box">
+            <div class="copy-modal-icon">
+                <i class="fa-solid fa-copy"></i>
+            </div>
+            <p class="text-slate-300 text-sm">تم نسخ الكود بنجاح</p>
+            <span id="copyModalCode" class="copy-modal-code"></span>
+            <p class="text-slate-500 text-xs mt-3">هل تريد المتابعة إلى صفحة التسجيل؟</p>
+            <div class="copy-modal-actions">
+                <button id="copyModalCancelBtn" class="copy-modal-btn cancel">إلغاء</button>
+                <button id="copyModalConfirmBtn" class="copy-modal-btn confirm">متابعة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lottie library + hero animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script>
+        lottie.loadAnimation({
+            container: document.getElementById('hero-lottie'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            // Put your file at public/animations/animation.json (or change this path)
+            path: "{{ asset('animations/animation.json') }}"
+        });
+    </script>
+
+    <script>
+        // amount, عادي, مع كود OTHY, مع كود paripulse & melbet
+        const priceRows = [
+            ['10 DH', '6 DH', '7 DH', '8 DH'],
+            ['20 DH', '12 DH', '14 DH', '16 DH'],
+            ['50 DH', '33 DH', '37 DH', '40 DH'],
+            ['100 DH', '65 DH', '75 DH', '80 DH']
+        ];
+
+        // مصفوفة المنصات مع ربط الصور بالامتدادات الصحيحة الموجودة في مجلد public لديك (1xbet.jfif و melbet.jfif)
+        const platforms = [
+            { name: '1XBET',    code: 'OTHY077', url: 'https://1xbet.com/registration/', img: "{{ asset('1xbet.jfif') }}" },
+            { name: 'LINEBET',    code: 'OTHY07',   url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
+            { name: 'MELBET',     code: 'OTHY08',   url: 'https://melbet.com/registration/', img: "{{ asset('melbet.jfif') }}" },
+            { name: 'PARIPULSE', code: 'OTHY07',   url: 'https://paripulsema.com/fr/registration/', img: "{{ asset('paripulse.png') }}" }
+        ];
+
+        const tbody = document.getElementById('price-table-body');
+        priceRows.forEach(([amount, normal, withCode, withParipulseMelbet]) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-white/5 transition-colors border-b border-slate-800/40';
+            tr.innerHTML = `
+                <td class="py-4 font-bold text-white">${amount}</td>
+                <td class="py-4 text-slate-300">${normal}</td>
+                <td class="py-4 text-blue-400 font-bold">${withCode}</td>
+                <td class="py-4 text-indigo-400 font-bold">${withParipulseMelbet}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const codesSection = document.getElementById('platforms');
+
+        // عكس المصفوفة لتبدأ من اليمين بالشكل الصحيح في الواجهة العربية
+        const reversedPlatforms = [...platforms].reverse();
+
+        reversedPlatforms.forEach(data => {
+            const card = document.createElement('div');
+            card.className = 'glass-card p-6 rounded-3xl text-center hover:-translate-y-2 hover:border-blue-500/40 transition-all border border-slate-700 flex flex-col justify-between';
+            card.innerHTML = `
+                <div>
+                    <div class="w-16 h-12 mx-auto mb-4 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center p-1.5 overflow-hidden">
+                        <img src="${data.img}" alt="${data.name}" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <div class="text-base md:text-lg font-black tracking-wide text-white mb-1 uppercase">${data.name}</div>
+                    <div class="text-[11px] text-slate-400 mb-3">كود ترويجي</div>
+                    <div class="text-2xl font-black text-blue-400 mb-6 tracking-wider">${data.code}</div>
+                </div>
+                <button class="w-full py-2.5 bg-slate-800 hover:bg-blue-600 rounded-lg text-xs font-bold transition-all text-white shadow">
+                    سجل الآن
+                </button>
+            `;
+            card.querySelector('button').addEventListener('click', () => copyAndRedirect(data.code, data.url));
+            codesSection.appendChild(card);
+        });
+
+        const copyModalOverlay = document.getElementById('copyModalOverlay');
+        const copyModalCode = document.getElementById('copyModalCode');
+        const copyModalConfirmBtn = document.getElementById('copyModalConfirmBtn');
+        const copyModalCancelBtn = document.getElementById('copyModalCancelBtn');
+        let pendingRedirectUrl = null;
+
+        function copyAndRedirect(code, url) {
+            navigator.clipboard.writeText(code).catch(() => {
+                const tmp = document.createElement('textarea');
+                tmp.value = code;
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                document.body.removeChild(tmp);
+            });
+
+            pendingRedirectUrl = url;
+            copyModalCode.textContent = code;
+            copyModalOverlay.classList.add('active');
+        }
+
+        function closeCopyModal() {
+            copyModalOverlay.classList.remove('active');
+            pendingRedirectUrl = null;
+        }
+
+        copyModalConfirmBtn.addEventListener('click', () => {
+            if (pendingRedirectUrl) window.open(pendingRedirectUrl, '_blank');
+            closeCopyModal();
+        });
+
+        copyModalCancelBtn.addEventListener('click', closeCopyModal);
+
+        copyModalOverlay.addEventListener('click', (e) => {
+            if (e.target === copyModalOverlay) closeCopyModal();
+        });
+
+        const navCta = document.getElementById('nav-cta');
+        const heroCta = document.getElementById('hero-cta');
+
+        const ctaObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    navCta.classList.add('nav-cta-hidden');
+                } else {
+                    navCta.classList.remove('nav-cta-hidden');
+                }
+            });
+        }, { threshold: 0.3 });
+
+        ctaObserver.observe(heroCta);
+    </script>
+</body>
+</html>
