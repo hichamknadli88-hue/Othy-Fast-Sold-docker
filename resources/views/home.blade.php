@@ -154,13 +154,24 @@
             <div class="text-lg font-black tracking-tight text-white">
                 OTHY <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">FAST SOLD</span>
             </div>
+            
             <div class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-bold">
                 <a href="#pricing" class="hover:text-blue-400 transition-colors">الأسعار</a>
                 <a href="#platforms" class="hover:text-blue-400 transition-colors">المنصات</a>
                 <a href="#contact" class="hover:text-blue-400 transition-colors">تواصل معنا</a>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <!-- أزرار الواتساب الجديدة في الهيدر -->
+                <a href="https://wa.me/212725415898" target="_blank" class="px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/30 hover:bg-green-600/30 text-green-400 transition-all flex items-center gap-1.5" title="واتساب 1">
+                    <i class="fab fa-whatsapp text-sm"></i>
+                    <span class="hidden sm:inline">واتساب 1</span>
+                </a>
+                <a href="https://wa.me/qr/DJTJUSLCYYWTO1" target="_blank" class="px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/30 hover:bg-green-600/30 text-green-400 transition-all flex items-center gap-1.5" title="واتساب 2">
+                    <i class="fab fa-whatsapp text-sm"></i>
+                    <span class="hidden sm:inline">واتساب 2</span>
+                </a>
+
                 <a href="{{ route('recharge.form') }}" id="nav-cta" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-blue-600 hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 text-white">
                     لتعبئة الحساب
                 </a>
@@ -178,11 +189,9 @@
                     </form>
                 @elseguest
                     <a href="{{ route('login') }}" class="px-4 py-2.5 rounded-lg text-sm font-bold bg-slate-800 hover:bg-slate-700 transition-all text-white">
-                       تسجيل الدخول  
+                        تسجيل الدخول  
                     </a>
                 @endauth
-
-
             </div>
         </div>
     </nav>
@@ -328,7 +337,6 @@
             renderer: 'svg',
             loop: true,
             autoplay: true,
-            // Put your file at public/animations/animation.json (or change this path)
             path: "{{ asset('animations/animation.json') }}"
         });
     </script>
@@ -340,15 +348,13 @@
             ['20 DH', '12 DH', '14 DH', '16 DH'],
             ['50 DH', '33 DH', '37 DH', '40 DH'],
             ['100 DH', '65 DH', '75 DH', '80 DH']
-
         ];
 
-        // مصفوفة المنصات مع ربط الصور بالامتدادات الصحيحة الموجودة في مجلد public لديك (1xbet.jfif و melbet.jfif)
         const platforms = [
             { name: '1XBET',    code: 'OTHY077', url: 'https://1xbet.com/registration/', img: "{{ asset('1xbet.jfif') }}" },
-            { name: 'LINEBET',    code: 'OTHY07',  url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
-            { name: 'MELBET',     code: 'OTHY08',  url: 'https://melbet.com/registration/', img: "{{ asset('melbet.jfif') }}" },
-            { name: 'PARIPULSE', code: 'OTHY07',  url: 'https://paripulsema.com/fr/registration/', img: "{{ asset('paripulse.png') }}" }
+            { name: 'LINEBET',    code: 'OTHY07',   url: 'https://linebet.com/registration/', img: "{{ asset('linebet.png') }}" },
+            { name: 'MELBET',     code: 'OTHY08',   url: 'https://melbet.com/registration/', img: "{{ asset('melbet.jfif') }}" },
+            { name: 'PARIPULSE', code: 'OTHY07',   url: 'https://paripulsema.com/fr/registration/', img: "{{ asset('paripulse.png') }}" }
         ];
 
         const tbody = document.getElementById('price-table-body');
@@ -365,8 +371,6 @@
         });
 
         const codesSection = document.getElementById('platforms');
-
-        // عكس المصفوفة لتبدأ من اليمين بالشكل الصحيح في الواجهة العربية
         const reversedPlatforms = [...platforms].reverse();
 
         reversedPlatforms.forEach(data => {
