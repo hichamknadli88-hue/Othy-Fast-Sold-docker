@@ -99,7 +99,7 @@
                    class="py-4 rounded-xl border border-gray-700 bg-gray-800 hover:border-gray-600 text-white font-bold text-center transition">
                     العودة للرئيسية
                 </a>
-                <a href="{{ url()->previous() === url()->current() ? route('home') : route('recharge.create') }}"
+              <a href="{{ route('recharge.form') }}"
                    class="py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-center shadow-lg transition">
                     طلب جديد
                 </a>
