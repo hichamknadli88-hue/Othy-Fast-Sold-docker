@@ -106,7 +106,7 @@
             </div>
         </div>
 
-        <a href="https://wa.me/212798706144" target="_blank"
+        <a href="https://wa.me/212725415898" target="_blank"
            class="mt-6 flex items-center justify-center gap-2 text-green-400 hover:text-green-300 text-sm font-bold">
             <i class="fa-brands fa-whatsapp text-lg"></i> عندك مشكل؟ تواصل معنا مباشرة على الواتساب
         </a>
