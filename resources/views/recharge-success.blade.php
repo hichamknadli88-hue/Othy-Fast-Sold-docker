@@ -89,7 +89,7 @@
             </div>
 
             {{-- Actions --}}
-            <a href="https://t.me/YOUR_TELEGRAM_USERNAME" target="_blank"
+            <a href="https://t.me/Othyfastsold" target="_blank"
                class="w-full mb-3 py-3.5 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 font-bold flex items-center justify-center gap-2 transition">
                 <i class="fa-brands fa-telegram text-lg"></i> تواصل عبر تيليغرام
             </a>
