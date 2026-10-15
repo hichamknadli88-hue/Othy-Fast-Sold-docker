@@ -26,6 +26,10 @@ Route::get('/portal', [RechargeController::class, 'index'])
 Route::post('/portal', [RechargeController::class, 'store'])
     ->middleware('throttle:recharge')->name('recharge.store');
 
+// Success page shown after a recharge request is sent
+Route::get('/portal/success', [RechargeController::class, 'success'])
+    ->middleware('throttle:30,1')->name('recharge.success');
+
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [AnnonceController::class, 'index'])->name('admin.dashboard');
 
