@@ -145,7 +145,7 @@
 
     <div class="w-full bg-blue-600/10 py-2.5 border-b border-blue-500/20 text-xs font-bold text-center text-blue-400 marquee-wrap">
         <span class="marquee-track">
-            سرعة، أمان، وموثوقية | تم إتمام أكثر من 200 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
+            سرعة، أمان، وموثوقية | تم إتمام أكثر من 1000 عملية اليوم | استخدم كود OTHY للحصول على أفضل سعر!
         </span>
     </div>
 
