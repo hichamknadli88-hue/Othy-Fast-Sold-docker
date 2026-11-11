@@ -2,27 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RechargeOrder;
+use App\Models\UserPlatformAccount;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RechargeController extends Controller
 {
     private const PLATFORMS = ['1xbet', 'melbet', 'paripulse', 'linebet'];
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('recharge', ['platforms' => self::PLATFORMS]);
+        $user = $request->user();
+
+        $savedPlatforms = $user
+            ? UserPlatformAccount::where('user_id', $user->id)->orderBy('platform')->get()
+            : collect();
+
+        return view('recharge', [
+            'platforms' => self::PLATFORMS,
+            'savedPlatforms' => $savedPlatforms,
+            'canRepeatRecharge' => $savedPlatforms->isNotEmpty(),
+        ]);
     }
 
     public function success()
     {
         if (!session('order')) {
-            return redirect()->route('recharge.create');
+            return redirect()->route('recharge.form');
         }
 
-        // keep the data in session so a page refresh does not lose it
         session()->keep(['order']);
 
         return view('recharge-success');
@@ -33,29 +45,45 @@ class RechargeController extends Controller
         ini_set('memory_limit', '512M');
         set_time_limit(300);
 
+        $user = $request->user();
+
         $ipKey = 'recharge_ip_' . $request->ip();
         if (session()->has($ipKey)) {
             $secondsLeft = session($ipKey) - time();
             if ($secondsLeft > 0) {
                 return back()->with([
                     'error' => 'الرجاء الانتظار قليلاً قبل إرسال طلب آخر.',
-                    'retry_after' => $secondsLeft
+                    'retry_after' => $secondsLeft,
                 ])->withInput();
             }
         }
 
-        $validated = $request->validate([
-            'montant' => ['required', 'numeric', 'min:1.01'],
-            'account_id' => ['required', 'string', 'max:255'],
-            'fullName' => ['required', 'string', 'min:3', 'max:15'],
+        // Mode "existing" kaykhdem ghir l user connecté
+        $mode = ($user && $request->input('recharge_mode') === 'existing') ? 'existing' : 'new';
+
+        $rules = [
+            'montant' => ['required', 'integer', 'min:2'],
             'recharge_code' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
-            'platform' => ['required', 'string'],
             'recharge_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp'],
-            'platform_screenshot' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp'],
-        ], [
+        ];
+
+        if ($mode === 'new') {
+            $rules += [
+                'account_id' => ['required', 'string', 'regex:/^[0-9]{7,13}$/'],
+                'fullName' => ['required', 'string', 'min:3', 'max:15'],
+                'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
+                'platform_screenshot' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp'],
+            ];
+        } else {
+            $rules['saved_platform'] = ['nullable', 'string', 'max:50'];
+        }
+
+        $validated = $request->validate($rules, [
             'montant.required' => 'المبلغ إجباري.',
+            'montant.integer' => 'المبلغ غير صالح.',
             'montant.min' => 'يجب أن يكون المبلغ أكبر من 1 درهم.',
             'account_id.required' => 'ID الحساب إجباري.',
+            'account_id.regex' => 'ID الحساب يجب أن يتكون من 7 إلى 13 رقماً.',
             'fullName.required' => 'الاسم الكامل إجباري.',
             'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
             'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 15 حرفاً.',
@@ -63,9 +91,39 @@ class RechargeController extends Controller
             'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
             'platform.required' => 'يرجى اختيار المنصة.',
+            'platform.in' => 'المنصة غير صالحة.',
             'recharge_image.required' => 'صورة إثبات التعبئة إجبارية.',
             'recharge_image.image' => 'الملف يجب أن يكون صورة صالحاً.',
         ]);
+
+        if ($mode === 'existing') {
+            $saved = UserPlatformAccount::where('user_id', $user->id)->get();
+
+            if ($saved->isEmpty()) {
+                return back()
+                    ->with('error', 'لا يوجد أي حساب محفوظ. اختر "تعبئة منصة جديدة".')
+                    ->withInput();
+            }
+
+            $account = $saved->count() === 1
+                ? $saved->first()
+                : $saved->firstWhere('platform', $request->input('saved_platform'));
+
+            if (!$account) {
+                return back()
+                    ->withErrors(['saved_platform' => 'يرجى اختيار المنصة المحفوظة.'])
+                    ->withInput();
+            }
+
+            // ID/ism/platform kay-jiw mn DB, ma kan3tamdoush 3la l client
+            $accountId = $account->account_id;
+            $fullName = $account->full_name;
+            $platform = $account->platform;
+        } else {
+            $accountId = trim($validated['account_id']);
+            $fullName = trim($validated['fullName']);
+            $platform = $validated['platform'];
+        }
 
         $token = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
@@ -75,31 +133,45 @@ class RechargeController extends Controller
             return back()->with('error', 'خطأ في إعدادات الخادم. المرجو التواصل مع الدعم.')->withInput();
         }
 
+        $order = null;
+        $rechargeStream = null;
+        $screenshotStream = null;
+
         try {
             $imageBinary = $this->compressImage($request->file('recharge_image'));
 
             $screenshotBinary = null;
-            if ($request->hasFile('platform_screenshot')) {
+            if ($mode === 'new' && $request->hasFile('platform_screenshot')) {
                 $screenshotBinary = $this->compressImage($request->file('platform_screenshot'));
             }
 
-            // Clean & sanitize input values
-            $montant = htmlspecialchars($validated['montant'], ENT_QUOTES, 'UTF-8');
-            $accountId = htmlspecialchars($validated['account_id'], ENT_QUOTES, 'UTF-8');
-            $fullName = htmlspecialchars($validated['fullName'], ENT_QUOTES, 'UTF-8');
-            $code = htmlspecialchars($validated['recharge_code'], ENT_QUOTES, 'UTF-8');
-            $platform = htmlspecialchars(strtoupper($validated['platform']), ENT_QUOTES, 'UTF-8');
+            $codeHash = hash_hmac('sha256', $validated['recharge_code'], (string) config('app.key'));
 
-            // Reference shown to the customer and sent to Telegram
-            $reference = 'WIN-' . strtoupper(Str::random(8));
+            $order = RechargeOrder::create([
+                'user_id' => $user?->id,
+                'montant' => (int) $validated['montant'],
+                'account_id' => $accountId,
+                'platform' => $platform,
+                'full_name' => $fullName,
+                'is_repeat' => $mode === 'existing',
+                'status' => 'pending',
+                'code_hash' => $codeHash,
+            ]);
+
+            $reference = 'WIN-' . strtoupper(substr($order->id, -8));
+
+            $esc = fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+            $typeLabel = $mode === 'existing' ? 'تعبئة حساب موجود' : 'منصة جديدة';
 
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
                 "📌 <b>المرجع:</b> <code>{$reference}</code>\n" .
-                "💰 <b>المبلغ:</b> <code>{$montant} DH</code>\n" .
-                "🆔 <b> الحساب:</b> <code>{$accountId}</code>\n" .
-                "👤 <b>الاسم الكامل:</b> <code>{$fullName}</code>\n" .
-                "🎟 <b>الكود:</b> <code>{$code}</code>\n" .
-                "🎮 <b>المنصة:</b> <code>{$platform}</code>";
+                "🔁 <b>النوع:</b> {$typeLabel}\n" .
+                "💰 <b>المبلغ:</b> <code>{$esc($validated['montant'])} DH</code>\n" .
+                "🆔 <b> الحساب:</b> <code>{$esc($accountId)}</code>\n" .
+                "👤 <b>الاسم الكامل:</b> <code>{$esc($fullName)}</code>\n" .
+                "🎟 <b>الكود:</b> <code>{$esc($validated['recharge_code'])}</code>\n" .
+                "🎮 <b>المنصة:</b> <code>{$esc(strtoupper($platform))}</code>" .
+                ($user ? "\n🙋 <b>المستخدم:</b> <code>{$esc($user->name)}</code>" : '');
 
             $media = [
                 [
@@ -137,20 +209,25 @@ class RechargeController extends Controller
                 'media' => json_encode($media),
             ]);
 
-            fclose($rechargeStream);
-            if (isset($screenshotStream)) {
-                fclose($screenshotStream);
-            }
-
             if ($response->successful()) {
+                $order->update(['status' => 'sent', 'telegram_sent_at' => now()]);
+
+                // Mode "new" + user connecté => kansavi l compte
+                if ($mode === 'new' && $user) {
+                    UserPlatformAccount::updateOrCreate(
+                        ['user_id' => $user->id, 'platform' => $platform],
+                        ['account_id' => $accountId, 'full_name' => $fullName]
+                    );
+                }
+
                 session([$ipKey => time() + 60]);
 
                 return redirect()
                     ->route('recharge.success')
                     ->with('order', [
                         'reference' => $reference,
-                        'amount'    => $montant,
-                        'platform'  => $platform,
+                        'amount' => $validated['montant'],
+                        'platform' => strtoupper($platform),
                     ]);
             }
 
@@ -159,16 +236,40 @@ class RechargeController extends Controller
                 'body' => $response->json() ?? $response->body(),
             ]);
 
+            $this->releaseOrder($order);
+
             return back()
                 ->with('error', 'حدث خطأ أثناء إرسال الطلب. حاول مرة أخرى أو تواصل معنا عبر واتساب.')
                 ->withInput();
 
-        } catch (\Exception $e) {
-            Log::error('Recharge Error: ' . $e->getMessage());
+        } catch (UniqueConstraintViolationException $e) {
+            return back()
+                ->withErrors(['recharge_code' => 'هذا الكود تم استعماله من قبل.'])
+                ->withInput();
+        } catch (\Throwable $e) {
+            if ($order) {
+                $this->releaseOrder($order);
+            }
+
+            Log::error('Recharge Error: ' . str_replace((string) $token, '***', $e->getMessage()));
+
             return back()
                 ->with('error', 'حدث خطأ غير متوقع أثناء إرسال الطلب، يجب المحاولة لاحقاً.')
                 ->withInput();
+        } finally {
+            if (is_resource($rechargeStream)) {
+                fclose($rechargeStream);
+            }
+            if (is_resource($screenshotStream)) {
+                fclose($screenshotStream);
+            }
         }
+    }
+
+    // Telegram t3attal: kan7errer l code bach l client y9der y3awd
+    private function releaseOrder(RechargeOrder $order): void
+    {
+        $order->update(['status' => 'failed', 'code_hash' => null]);
     }
 
     private function compressImage($file): string
