@@ -19,7 +19,7 @@ class RechargeController extends Controller
         $user = $request->user();
 
         $savedPlatforms = $user
-            ? UserPlatformAccount::where('user_id', $user->id)->orderBy('platform')->get()
+            ? UserPlatformAccount::where('user_id', $user->id)->orderBy('platform')->orderBy('created_at')->get()
             : collect();
 
         return view('recharge', [
@@ -75,7 +75,7 @@ class RechargeController extends Controller
                 'platform_screenshot' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp'],
             ];
         } else {
-            $rules['saved_platform'] = ['nullable', 'string', 'max:50'];
+            $rules['saved_account'] = ['nullable', 'string', 'max:50'];
         }
 
         $validated = $request->validate($rules, [
@@ -97,25 +97,26 @@ class RechargeController extends Controller
         ]);
 
         if ($mode === 'existing') {
+            // Kan-jibo ghir les comptes dyal had l user (sécurité: ma kan3tamdoush 3la l client)
             $saved = UserPlatformAccount::where('user_id', $user->id)->get();
 
             if ($saved->isEmpty()) {
                 return back()
-                    ->with('error', 'لا يوجد أي حساب محفوظ. اختر "تعبئة منصة جديدة".')
+                    ->with('error', 'لا يوجد أي حساب محفوظ. اختر "إضافة حساب جديد".')
                     ->withInput();
             }
 
             $account = $saved->count() === 1
                 ? $saved->first()
-                : $saved->firstWhere('platform', $request->input('saved_platform'));
+                : $saved->firstWhere('id', $request->input('saved_account'));
 
             if (!$account) {
                 return back()
-                    ->withErrors(['saved_platform' => 'يرجى اختيار المنصة المحفوظة.'])
+                    ->withErrors(['saved_account' => 'يرجى اختيار الحساب المحفوظ.'])
                     ->withInput();
             }
 
-            // ID/ism/platform kay-jiw mn DB, ma kan3tamdoush 3la l client
+            // ID/ism/platform kay-jiw mn DB
             $accountId = $account->account_id;
             $fullName = $account->full_name;
             $platform = $account->platform;
@@ -161,7 +162,7 @@ class RechargeController extends Controller
             $reference = 'WIN-' . strtoupper(substr($order->id, -8));
 
             $esc = fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
-            $typeLabel = $mode === 'existing' ? 'تعبئة حساب موجود' : 'منصة جديدة';
+            $typeLabel = $mode === 'existing' ? 'تعبئة حساب محفوظ' : 'حساب جديد';
 
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
                 "📌 <b>المرجع:</b> <code>{$reference}</code>\n" .
@@ -212,11 +213,11 @@ class RechargeController extends Controller
             if ($response->successful()) {
                 $order->update(['status' => 'sent', 'telegram_sent_at' => now()]);
 
-                // Mode "new" + user connecté => kansavi l compte
+                // Mode "new" + user connecté => kansavi l compte (compte jdid = ligne jdida, bla ma ymse7 les autres)
                 if ($mode === 'new' && $user) {
                     UserPlatformAccount::updateOrCreate(
-                        ['user_id' => $user->id, 'platform' => $platform],
-                        ['account_id' => $accountId, 'full_name' => $fullName]
+                        ['user_id' => $user->id, 'platform' => $platform, 'account_id' => $accountId],
+                        ['full_name' => $fullName]
                     );
                 }
 
