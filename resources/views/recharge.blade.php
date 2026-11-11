@@ -18,7 +18,6 @@
 </head>
 <body class="min-h-screen">
 
-
     <!-- Nav bar -->
     <nav class="w-full border-b border-gray-800 bg-gray-black/100 backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -88,13 +87,13 @@
                     <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-3" id="recharge-mode-section">
                         <button type="button" data-mode="existing"
                                 class="recharge-mode-btn rounded-2xl border-2 p-4 text-right transition {{ $defaultMode === 'existing' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50 hover:border-gray-600' }}">
-                            <span class="block text-sm font-black text-white mb-1">تعبئة حساب موجود</span>
-                            <span class="block text-xs text-gray-400">اختر المبلغ، أدخل الكود وارفع صورة التعبئة فقط.</span>
+                            <span class="block text-sm font-black text-white mb-1">تعبئة حساب محفوظ</span>
+                            <span class="block text-xs text-gray-400">اختر الحساب، ثم المبلغ والكود وصورة التعبئة فقط.</span>
                         </button>
                         <button type="button" data-mode="new"
                                 class="recharge-mode-btn rounded-2xl border-2 p-4 text-right transition {{ $defaultMode === 'new' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800/50 hover:border-gray-600' }}">
-                            <span class="block text-sm font-black text-white mb-1">تعبئة منصة جديدة</span>
-                            <span class="block text-xs text-gray-400">املأ كل معلومات الحساب والمنصة كما في المرة الأولى.</span>
+                            <span class="block text-sm font-black text-white mb-1">إضافة حساب جديد</span>
+                            <span class="block text-xs text-gray-400">أدخل ID والاسم والمنصة، وسيتم حفظ الحساب للمرات القادمة.</span>
                         </button>
                     </div>
                 @else
@@ -119,7 +118,7 @@
                         <p class="hint text-xs mt-1.5 text-gray-400">اختر المبلغ الذي تريد تعبئته.</p>
                     </div>
 
-                    {{-- ID الحساب (منصة جديدة فقط) --}}
+                    {{-- ID الحساب (حساب جديد فقط) --}}
                     <div class="mb-5 fields-new-only-block" id="group-account_id">
                         <label for="account_id" class="block mb-2 text-sm font-semibold text-gray-300">ID الحساب <span class="text-red-500">*</span></label>
                         <input type="text" inputmode="numeric" id="account_id" name="account_id" value="{{ old('account_id') }}"
@@ -131,7 +130,7 @@
                     </div>
                 </div>
 
-                {{-- الاسم الكامل (منصة جديدة فقط) --}}
+                {{-- الاسم الكامل (حساب جديد فقط) --}}
                 <div class="mb-5 fields-new-only-block" id="group-fullName">
                     <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
                     <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
@@ -158,6 +157,7 @@
                     </div>
                 </div>
 
+                {{-- حساب محفوظ واحد --}}
                 @if($showRechargeModes && $savedCount === 1)
                     @php $onlySaved = $savedPlatforms->first(); @endphp
                     <div class="mb-5 hidden existing-mode-block" id="fields-existing-single">
@@ -171,10 +171,11 @@
                     </div>
                 @endif
 
+                {{-- عدة حسابات محفوظة: اختيار الحساب --}}
                 @if($showRechargeModes && $savedCount > 1)
                     <div class="mb-5 hidden existing-mode-block" id="fields-existing-only">
-                        <label class="block mb-2 text-sm font-semibold text-gray-300">اختر المنصة المحفوظة <span class="text-red-500">*</span></label>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="group-saved-platform">
+                        <label class="block mb-2 text-sm font-semibold text-gray-300">اختر الحساب المراد تعبئته <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="group-saved-platform">
                             @foreach($savedPlatforms as $saved)
                                 @php
                                     $platformLower = strtolower($saved->platform);
@@ -185,24 +186,29 @@
                                         'paripulse' => 'paripulse.png',
                                         default => '',
                                     };
-                                    $checked = strtolower(old('saved_platform', $savedPlatforms->first()->platform)) === $platformLower;
+                                    $checked = (string) old('saved_account', $savedPlatforms->first()->id) === (string) $saved->id;
                                 @endphp
                                 <div class="platform-card">
-                                    <input type="radio" name="saved_platform" id="saved-platform-{{ $platformLower }}" value="{{ $saved->platform }}"
+                                    <input type="radio" name="saved_account" id="saved-account-{{ $saved->id }}" value="{{ $saved->id }}"
                                            class="hidden saved-platform-radio"
                                            data-account-id="{{ $saved->account_id }}"
                                            data-full-name="{{ $saved->full_name }}"
                                            data-platform-label="{{ strtoupper($saved->platform) }}"
                                            {{ $checked ? 'checked' : '' }}>
-                                    <label for="saved-platform-{{ $platformLower }}"
-                                           class="flex flex-col items-center justify-center gap-1.5 h-24 rounded-xl border-2 border-gray-700 bg-gray-800 cursor-pointer text-xs font-bold uppercase transition hover:border-blue-500 p-2">
+                                    <label for="saved-account-{{ $saved->id }}"
+                                           class="flex items-center gap-3 min-h-[5rem] rounded-xl border-2 border-gray-700 bg-gray-800 cursor-pointer transition hover:border-blue-500 p-3">
                                         @if($imgFile)
-                                            <div class="w-10 h-7 rounded bg-gray-900 flex items-center justify-center p-0.5 overflow-hidden">
+                                            <div class="w-12 h-9 shrink-0 rounded bg-gray-900 flex items-center justify-center p-0.5 overflow-hidden">
                                                 <img src="{{ asset($imgFile) }}" alt="{{ $saved->platform }}" class="max-h-full max-w-full object-contain">
                                             </div>
+                                        @else
+                                            <div class="w-9 h-9 shrink-0 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs"><i class="fa-solid fa-gamepad"></i></div>
                                         @endif
-                                        <span>{{ strtoupper($saved->platform) }}</span>
-                                        <span class="text-[10px] text-gray-400 font-normal normal-case">ID: {{ $saved->account_id }}</span>
+                                        <div class="text-right leading-tight min-w-0">
+                                            <span class="block text-xs font-bold uppercase text-white">{{ strtoupper($saved->platform) }}</span>
+                                            <span class="block text-xs font-mono text-blue-300 mt-1">{{ $saved->account_id }}</span>
+                                            <span class="block text-[11px] text-gray-400 truncate">{{ $saved->full_name }}</span>
+                                        </div>
                                     </label>
                                 </div>
                             @endforeach
@@ -213,11 +219,11 @@
                             <p class="text-white"><span class="text-gray-400">ID الحساب:</span> <span id="existing-summary-id" class="font-mono text-blue-300">—</span></p>
                             <p class="text-white"><span class="text-gray-400">الاسم:</span> <span id="existing-summary-name">—</span></p>
                         </div>
-                        <p class="hint text-xs mt-1.5 text-gray-400">اختر المنصة — ID والاسم يُؤخذان من قاعدة البيانات ولا تُرسل من حقول أخرى.</p>
+                        <p class="hint text-xs mt-1.5 text-gray-400">اختر الحساب — المعلومات تُؤخذ من قاعدة البيانات. لحساب آخر اضغط «إضافة حساب جديد».</p>
                     </div>
                 @endif
 
-                {{-- المنصة (منصة جديدة فقط) --}}
+                {{-- المنصة (حساب جديد فقط) --}}
                 <div class="mb-5 fields-new-only-block" id="fields-new-platform">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">اختر المنصة <span class="text-red-500">*</span></label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="group-platform">
@@ -267,7 +273,7 @@
                     <p class="hint text-xs mt-1.5 text-gray-400">إجبارية.</p>
                 </div>
 
-                {{-- سكرين شوت اختياري (منصة جديدة فقط) --}}
+                {{-- سكرين شوت اختياري (حساب جديد فقط) --}}
                 <div class="mb-6 fields-new-only-block" id="group-platform_screenshot">
                     <label class="block mb-2 text-sm font-semibold text-gray-300">سكرين شوت (ID + البرومو كود) <span class="text-gray-400 font-normal">(اختياري)</span></label>
                     <label for="platform_screenshot" class="upload-zone flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition text-center bg-gray-800/50">
@@ -365,6 +371,7 @@
 
         const newPlatformRadios = document.querySelectorAll('.new-platform-radio');
         const savedPlatformRadios = document.querySelectorAll('.saved-platform-radio');
+        const wasChecked = document.querySelector('.new-platform-radio:checked');
         setInputsEnabled(newPlatformRadios, !isExisting);
         setInputsEnabled(savedPlatformRadios, isExisting);
 
