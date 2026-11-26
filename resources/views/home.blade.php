@@ -195,9 +195,9 @@
             </div>
         </div>
     </nav>
-    @auth
+   @auth
     <div class="w-full bg-slate-900/60 border-b border-slate-800/60">
-        <div class="max-w-6xl mx-auto px-6 py-2.5 text-sm font-bold text-slate-300">
+        <div class="max-w-6xl mx-auto px-6 py-2.5 text-sm font-bold text-slate-300 text-center">
             مرحباً، <span class="text-blue-400">{{ auth()->user()->name }}</span>
         </div>
     </div>
