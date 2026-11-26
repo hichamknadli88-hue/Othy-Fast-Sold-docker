@@ -135,10 +135,10 @@
                     <label for="fullName" class="block mb-2 text-sm font-semibold text-gray-300">الاسم الكامل <span class="text-red-500">*</span></label>
                     <input type="text" id="fullName" name="fullName" value="{{ old('fullName') }}"
                            placeholder="الاسم الكامل"
-                           maxlength="15"
+                           maxlength="10"
                            class="w-full h-12 p-3 rounded-xl bg-gray-800 border border-gray-700 text-white focus:outline-none focus:border-blue-500 transition"
                            required>
-                    <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري (الحد الأقصى 15 حرف).</p>
+                    <p class="hint text-xs mt-1.5 text-gray-400">الاسم الكامل إجباري (الحد الأقصى 10 أحرف).</p>
                 </div>
 
                 {{-- كود التعبئة (16 رقم) --}}
