@@ -195,6 +195,13 @@
             </div>
         </div>
     </nav>
+    @auth
+    <div class="w-full bg-slate-900/60 border-b border-slate-800/60">
+        <div class="max-w-6xl mx-auto px-6 py-2.5 text-sm font-bold text-slate-300">
+            مرحباً، <span class="text-blue-400">{{ auth()->user()->name }}</span>
+        </div>
+    </div>
+@endauth
 
     <!-- أزرار الواتساب العائمة في أسفل اليسار (تظهر باستمرار أثناء التمرير) -->
     <div class="fixed bottom-5 left-5 z-50 flex flex-col gap-3">
