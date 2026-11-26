@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\RechargeOrder;
 use App\Models\UserPlatformAccount;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -70,7 +72,7 @@ class RechargeController extends Controller
         if ($mode === 'new') {
             $rules += [
                 'account_id' => ['required', 'string', 'regex:/^[0-9]{7,13}$/'],
-                'fullName' => ['required', 'string', 'min:3', 'max:15'],
+                'fullName' => ['required', 'string', 'min:3', 'max:10'],
                 'platform' => ['required', 'string', Rule::in(self::PLATFORMS)],
                 'platform_screenshot' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp'],
             ];
@@ -86,7 +88,7 @@ class RechargeController extends Controller
             'account_id.regex' => 'ID الحساب يجب أن يتكون من 7 إلى 13 رقماً.',
             'fullName.required' => 'الاسم الكامل إجباري.',
             'fullName.min' => 'الاسم الكامل يجب أن يحتوي على 3 أحرف على الأقل.',
-            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 15 حرفاً.',
+            'fullName.max' => 'الاسم الكامل يجب ألا يتجاوز 10 أحرف.',
             'recharge_code.required' => 'كود التعبئة إجباري.',
             'recharge_code.size' => 'يجب أن يتكون كود التعبئة من 16 رقماً بالضبط.',
             'recharge_code.regex' => 'كود التعبئة يجب أن يتكون من أرقام فقط.',
@@ -134,6 +136,14 @@ class RechargeController extends Controller
             return back()->with('error', 'خطأ في إعدادات الخادم. المرجو التواصل مع الدعم.')->withInput();
         }
 
+        // Lock: kaymna3 joj requests f nfs l-wa9t (double click / double submit)
+        $lock = Cache::lock('recharge_submit_' . ($user?->id ?? $request->ip()), 90);
+        if (!$lock->get()) {
+            return back()
+                ->with('error', 'طلبك قيد المعالجة، المرجو الانتظار.')
+                ->withInput();
+        }
+
         $order = null;
         $rechargeStream = null;
         $screenshotStream = null;
@@ -159,13 +169,10 @@ class RechargeController extends Controller
                 'code_hash' => $codeHash,
             ]);
 
-            $reference = 'WIN-' . strtoupper(substr($order->id, -8));
-
             $esc = fn ($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             $typeLabel = $mode === 'existing' ? 'تعبئة حساب محفوظ' : 'حساب جديد';
 
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
-                "📌 <b>المرجع:</b> <code>{$reference}</code>\n" .
                 "🔁 <b>النوع:</b> {$typeLabel}\n" .
                 "💰 <b>المبلغ:</b> <code>{$esc($validated['montant'])} DH</code>\n" .
                 "🆔 <b> الحساب:</b> <code>{$esc($accountId)}</code>\n" .
@@ -226,7 +233,6 @@ class RechargeController extends Controller
                 return redirect()
                     ->route('recharge.success')
                     ->with('order', [
-                        'reference' => $reference,
                         'amount' => $validated['montant'],
                         'platform' => strtoupper($platform),
                     ]);
@@ -248,7 +254,8 @@ class RechargeController extends Controller
                 ->withErrors(['recharge_code' => 'هذا الكود تم استعماله من قبل.'])
                 ->withInput();
         } catch (\Throwable $e) {
-            if ($order) {
+            // Timeout/connexion: Telegram yqder ykon wsl l message, ma n7arrarouch l code (bach ma ytsiftch mrtayn)
+            if ($order && !($e instanceof ConnectionException)) {
                 $this->releaseOrder($order);
             }
 
@@ -264,6 +271,7 @@ class RechargeController extends Controller
             if (is_resource($screenshotStream)) {
                 fclose($screenshotStream);
             }
+            $lock->release();
         }
     }
 
