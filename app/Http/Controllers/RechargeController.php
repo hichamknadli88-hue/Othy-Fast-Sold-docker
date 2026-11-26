@@ -173,7 +173,6 @@ class RechargeController extends Controller
             $typeLabel = $mode === 'existing' ? 'تعبئة حساب محفوظ' : 'حساب جديد';
 
             $message = "🔔 <b>طلب شحن جديد</b>\n\n" .
-                "🔁 <b>النوع:</b> {$typeLabel}\n" .
                 "💰 <b>المبلغ:</b> <code>{$esc($validated['montant'])} DH</code>\n" .
                 "🆔 <b> الحساب:</b> <code>{$esc($accountId)}</code>\n" .
                 "👤 <b>الاسم الكامل:</b> <code>{$esc($fullName)}</code>\n" .
